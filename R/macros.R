@@ -211,7 +211,7 @@ format_cell <- function(cell, width, style = NULL) {
 #' @title pretty_print_table
 #' @description Pretty print a data frame in table format with aligned columns and color palette
 #' @param data a valid R object, e.g. data.frame
-#' @importFrom cli cli_alert_info cli_text cli_verbatim make_ansi_style col_grey
+#' @importFrom cli cli_alert_info cli_text cli_verbatim make_ansi_style col_yellow
 #' @export pretty_print_table
 pretty_print_table <- function(data) {
     if (is.data.frame(data) && nrow(data) > 0) {
@@ -235,11 +235,11 @@ pretty_print_table <- function(data) {
         body_text_col <- make_ansi_style("#b16286", bg = FALSE)
 
         # Apply colors to the header
-        header <- col_grey(paste0("│ ", paste(mapply(format_cell, col_names, col_widths, MoreArgs = list(style = header_text_col)), collapse = " │ "), " │"))
-        separator <- col_grey(paste0("├─", paste(mapply(function(width) col_grey(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┼─"), "─┤"))
+        header <- col_yellow(paste0("│ ", paste(mapply(format_cell, col_names, col_widths, MoreArgs = list(style = header_text_col)), collapse = " │ "), " │"))
+        separator <- col_yellow(paste0("├─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┼─"), "─┤"))
 
         # Print table top border and header
-        cli_verbatim(col_grey(paste0("╭─", paste(mapply(function(width) col_grey(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┬─"), "─╮")))
+        cli_verbatim(col_yellow(paste0("╭─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┬─"), "─╮")))
         cli_verbatim(header)
         cli_verbatim(separator)
 
@@ -248,12 +248,12 @@ pretty_print_table <- function(data) {
 
         for (i in seq_len(nrow(data))) {
             style <- row_styles[[i %% length(row_styles) + 1]]  # Alternating row colors
-            row <- col_grey(paste0("│ ", paste(mapply(format_cell, col_values[i, ], col_widths, MoreArgs = list(style = style)), collapse = " │ "), " │"))
+            row <- col_yellow(paste0("│ ", paste(mapply(format_cell, col_values[i, ], col_widths, MoreArgs = list(style = style)), collapse = " │ "), " │"))
             cli_verbatim(row)
         }
 
         # Print bottom border
-        cli_text(col_grey(paste0("╰─", paste(mapply(function(width) col_grey(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┴─"), "─╯")))
+        cli_text(col_yellow(paste0("╰─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┴─"), "─╯")))
     }
 }
 
