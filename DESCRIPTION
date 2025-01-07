@@ -13,7 +13,8 @@ Imports:
     dplyr,
     purrr,
     stringr,
-    yaml
+    yaml,
+    rlang
 Depends:
     R (>= 3.5.0)
 RoxygenNote: 7.3.1

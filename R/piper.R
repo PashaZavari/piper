@@ -192,7 +192,6 @@ piper <- R6::R6Class("piper",
 #' @description Initialize a new piper instance.
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
 #' @param ... a list of functional arguments
-#'
 #' @export piper.new
 piper.new <- function(.env = parent.frame(), ...) { #nolintr
     assign("module_", piper$new(...), envir = .env)
@@ -203,9 +202,8 @@ piper.new <- function(.env = parent.frame(), ...) { #nolintr
 #' @param module the name of the source asset
 #' @param from target directory
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
-#'
 #' @export piper.load
-piper.load <- function(module, from, .env = caller_env(), ...) { #nolintr
+piper.load <- function(module, from, .env = rlang::caller_env(), ...) { #nolintr
     module_$set_env(.env = .env)
     module_$load(module, from, ...)
 }
@@ -215,7 +213,6 @@ piper.load <- function(module, from, .env = caller_env(), ...) { #nolintr
 #' @param .this state initializers
 #' @param .with expression constructors
 #' @param ... a list of functional arguments
-#'
 #' @export module_.push
 module_.push <- function(.this = {}, .with = {}, ...) { #nolintr
     module_$push(substitute(.this %>>% .with), ...)
@@ -224,7 +221,6 @@ module_.push <- function(.this = {}, .with = {}, ...) { #nolintr
 #' @title module_.pop
 #' @description Execute a piper module.
 #' @param ... a list of language expressions
-#'
 #' @export module_.pop
 module_.pop <- function(...) { #nolintr
     module_$pop(...)
@@ -232,7 +228,6 @@ module_.pop <- function(...) { #nolintr
 
 #' @title module_.env
 #' @description Fetch global module environment.
-#'
 #' @export module_.env
 module_.env <- function(...) { #nolintr
     module_$get_env()
