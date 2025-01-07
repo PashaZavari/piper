@@ -1,4 +1,24 @@
+# Ignore local environment configurations
+.env
+
+# Ignore all R artifacts
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+.Renviron
+.Rprofile
+
+# Ignore akk R project initializers
+*.Rproj
+
+# Ignore builds and namespace assets
+NAMESPACE
+man/*
+
+# All others
+.idea
+.DS_Store
+.vscode/
+
+
