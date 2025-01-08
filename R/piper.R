@@ -193,8 +193,12 @@ piper <- R6::R6Class("piper",
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
 #' @param ... a list of functional arguments
 #' @export piper.new
-piper.new <- function(.env = parent.frame(), ...) { #nolintr
-    assign("module_", piper$new(...), envir = .env)
+piper.new <- function(.env = parent.frame(), .pipe = "module_", ...) { #nolintr
+    if (exists(.piper) && inherits(class(.pipe), "piper")) {
+        warning(paste(.pipe, " << is already defined."))
+    } else {
+        assign(.pipe, piper$new(...), envir = .env)
+    }
 }
 
 #' @title piper.load
