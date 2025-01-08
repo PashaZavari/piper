@@ -215,6 +215,7 @@ format_cell <- function(cell, width, style = NULL) {
 #' @export pretty_print_table
 pretty_print_table <- function(data) {
     if (is.data.frame(data) && nrow(data) > 0) {
+        cat("\n")
         cli_alert_info("[Module Summary]")
 
         # Get the column names and values as strings
@@ -239,8 +240,11 @@ pretty_print_table <- function(data) {
         separator <- col_yellow(paste0("├─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┼─"), "─┤"))
 
         # Print table top border and header
+        cat("\t")
         cli_verbatim(col_yellow(paste0("╭─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┬─"), "─╮")))
+        cat("\t")
         cli_verbatim(header)
+        cat("\t")
         cli_verbatim(separator)
 
         # Print each row with alternating background colors
@@ -249,10 +253,12 @@ pretty_print_table <- function(data) {
         for (i in seq_len(nrow(data))) {
             style <- row_styles[[i %% length(row_styles) + 1]]  # Alternating row colors
             row <- col_yellow(paste0("│ ", paste(mapply(format_cell, col_values[i, ], col_widths, MoreArgs = list(style = style)), collapse = " │ "), " │"))
+            cat("\t")
             cli_verbatim(row)
         }
 
         # Print bottom border
+        cat("\t")
         cli_text(col_yellow(paste0("╰─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┴─"), "─╯")))
     }
 }
