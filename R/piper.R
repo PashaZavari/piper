@@ -49,6 +49,7 @@ piper <- R6::R6Class("piper",
             self$blocks <- c(self$blocks, module)
             is_duplicated <- duplicated(self$blocks)
             if (any(is_duplicated)) {
+                is_duplicated <- unique(is_duplicated)
                 msg <- paste0("Multiple imports found for <", self$blocks[which(is_duplicated)], ">")
                 stop(msg)
             }
@@ -187,15 +188,16 @@ piper <- R6::R6Class("piper",
     )
 )
 
-
 #' @title piper.new
 #' @description Initialize a new piper instance.
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
 #' @param ... a list of functional arguments
 #' @export piper.new
-piper.new <- function(.env = parent.frame(), .pipe = "module_", ...) { #nolintr
+piper.new <- function(.env = parent.frame(), ...) { #nolintr
+    .pipe <- "module_"
     if (exists(.pipe) && inherits(get(.pipe), "piper")) {
-        warning(paste(.pipe, " << is already defined."))
+        warning(paste(.pipe, " << is already defined. 
+            Consider using piper.purge() to release the module before decleration."))
     } else {
         assign(.pipe, piper$new(...), envir = .env)
     }
@@ -210,6 +212,16 @@ piper.new <- function(.env = parent.frame(), .pipe = "module_", ...) { #nolintr
 piper.load <- function(module, from, .env = rlang::caller_env(), ...) { #nolintr
     module_$set_env(.env = .env)
     module_$load(module, from, ...)
+}
+
+#' @title piper.purge
+#' @description Purge module pipe.
+#' @export piper.purge
+piper.purge <- function(.env = parent.frame()) { #nolintr
+    module_$namespace
+    rm(ls = list(module_$namespace), envir = .env)
+    rm(ls = list(module_$get_stack()), envir = .env)
+    rm(module_)
 }
 
 #' @title module_.push
@@ -233,6 +245,6 @@ module_.pop <- function(...) { #nolintr
 #' @title module_.env
 #' @description Fetch global module environment.
 #' @export module_.env
-module_.env <- function(...) { #nolintr
+module_.env <- function() { #nolintr
     module_$get_env()
 }

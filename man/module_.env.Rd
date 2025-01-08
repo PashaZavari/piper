@@ -4,7 +4,7 @@
 \alias{module_.env}
 \title{module_.env}
 \usage{
-module_.env(...)
+module_.env()
 }
 \description{
 Fetch global module environment.

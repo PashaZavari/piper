@@ -4,7 +4,7 @@
 \alias{piper.new}
 \title{piper.new}
 \usage{
-piper.new(.env = parent.frame(), .pipe = "module_", ...)
+piper.new(.env = parent.frame(), ...)
 }
 \arguments{
 \item{.env}{a target environmehnt hook, DEFAULT: parent.frame()}
