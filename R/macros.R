@@ -215,7 +215,7 @@ format_cell <- function(cell, width, style = NULL) {
 #' @export pretty_print_table
 pretty_print_table <- function(data) {
     if (is.data.frame(data) && nrow(data) > 0) {
-        cat("\n")
+        cat("\n\t")
         cli_alert_info("[Module Summary]")
 
         # Get the column names and values as strings
