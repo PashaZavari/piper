@@ -194,7 +194,7 @@ piper <- R6::R6Class("piper",
 #' @param ... a list of functional arguments
 #' @export piper.new
 piper.new <- function(.env = parent.frame(), .pipe = "module_", ...) { #nolintr
-    if (exists(.piper) && inherits(class(.pipe), "piper")) {
+    if (exists(.pipe) && inherits(class(.pipe), "piper")) {
         warning(paste(.pipe, " << is already defined."))
     } else {
         assign(.pipe, piper$new(...), envir = .env)
