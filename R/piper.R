@@ -220,9 +220,13 @@ piper.load <- function(module, from, .env = rlang::caller_env(), ...) { #nolintr
 #' @description Purge module pipe.
 #' @export piper.purge
 piper.purge <- function(.env = parent.frame()) { #nolintr
-    rm(list = unlist(module_$namespace), envir = .env)
-    rm(list = module_$get_stack(), envir = .env)
-    rm(module_)
+    .purge <- c(
+        unlist(module_$namespace),
+        module_$get_stack(),
+        "module_"
+    )
+    rm(list = .purge, envir = .env)
+    gc(full = TRUE, reset = TRUE)
 }
 
 #' @title module_.push
