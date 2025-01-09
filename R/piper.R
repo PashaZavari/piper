@@ -49,14 +49,8 @@ piper <- R6::R6Class("piper",
                 msg <- paste0("Multiple imports found for <", module, ">")
                 self$imports[args$id] <- list(expr)
                 warning(msg)
-                print("############")
-                print(self$imports)
-                print("##########")
             } else {
                 self$imports <- append(self$imports, setNames(list(expr), args$id))
-                print(">>>>>>>>>>>>>")
-                print(self$imports)
-                print(">>>>>>>>>>>>")
                 self$blocks <- c(self$blocks, module)
             }
         },
@@ -200,11 +194,17 @@ piper <- R6::R6Class("piper",
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
 #' @param ... a list of functional arguments
 #' @export piper.new
-piper.new <- function(.env = parent.frame(), ...) { #nolintr
+piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) { #nolintr
     .pipe <- "module_"
     if (exists(.pipe) && inherits(get(.pipe), "piper")) {
-        warning(paste(.pipe, " << is already defined. 
-            Consider using piper.purge() to release the module before decleration."))
+        if (auto_purge) {
+            piper.purge()
+            warning(paste(.pipe, " << is already defined. Applying auto-purge to release module.
+                Set auto_purge = FALSE to prevent this in the future."))
+        } else {
+            warning(paste(.pipe, " << is already defined. 
+                Consider using piper.purge() to release the module before decleration."))
+        }
     } else {
         assign(.pipe, piper$new(...), envir = .env)
     }
