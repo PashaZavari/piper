@@ -20,23 +20,15 @@ piper <- R6::R6Class("piper",
         #' @param name a computational block to execute
         #' @param .debug should debug mode get triggered, DEFAULT: FALSE
         pop = function(name, .debug = FALSE) {
-            print(name)
-            print(">>>>>>>>>>")
-            print(.debug)
-            print(">>>>>>>>>>")
             if (name %in% names(self$imports)) {
                 import <- self$imports[[name]]
                 print(import)
                 if (.debug) {
-                    print(">>>>>>>>>>")
-                    print(self$dir)
                     tmp_path <- paste0(self$dir, "/", basename(tempfile()), ".R")
-                    print(">>>>>>>>>>")
-                    print(tmp_path)
                     writeLines(deparse(import), tmp_path)
                     private$attach_browser(tmp_path)
-                    # response <- source(tmp_path)
-                    # if (file.exists(tmp_path)) file.remove(tmp_path)
+                    response <- source(tmp_path)
+                    if (file.exists(tmp_path)) file.remove(tmp_path)
                 } else {
                     response <- eval(import)
                 }
@@ -186,8 +178,8 @@ piper <- R6::R6Class("piper",
             # Insert browser() at the beginning of the file content
             file_content[length(file_content)] <- paste0(file_content[length(file_content)], browser_footer)
             new_content <- c(browser_header, file_content)
-            pattern <- "%pipe%\\s*\\{"
-            replacement <- paste0(" %pipe% \\{ \nbrowser(); ", on_exit)
+            pattern <- "%>>%\\s*\\{"
+            replacement <- paste0(" %>>% \\{ \nbrowser(); ", on_exit)
 
             # Replace occurrences of the pattern with the replacement text
             new_content <- gsub(pattern, replacement, new_content, perl = TRUE)
