@@ -64,6 +64,7 @@ piper <- R6::R6Class("piper",
             args <- list(local_env_ = .env)
             file <- paste(module, "R", sep = ".")
             path <- paste(from, src, "modules", file, sep = "/")
+            self$dir <- path
             source(path, local = list2env(args))
             self$map_pipeline()
         },
