@@ -102,7 +102,7 @@ error_guard <- function(expr, args, env, stack, pipe) {
             {
                 .pre_global_namespace <- take_snapshot()
 
-                eval(expr, envir = env)
+                eval(expr, envir = .GlobalEnv)
 
                 .post_global_namespace <- take_snapshot()
 
