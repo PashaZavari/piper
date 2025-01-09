@@ -198,7 +198,7 @@ piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) { #nolintr
     .pipe <- "module_"
     if (exists(.pipe) && inherits(get(.pipe), "piper")) {
         if (auto_purge) {
-            piper.purge()
+            piper.purge(.env = parent.frame(n = 1))
             warning(paste(.pipe, " << is already defined. Applying auto-purge to release module.
                 Set auto_purge = FALSE to prevent this in the future."))
         } else {
