@@ -1,4 +1,4 @@
-![Piper Logo](assets/logo/logo.png)
+![Piper Logo](assets/logo.png)
 
 # Piper: Modular Pipelines with Dependency and Namespace Management in R
 
