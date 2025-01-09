@@ -22,7 +22,6 @@ piper <- R6::R6Class("piper",
         pop = function(name, .debug = FALSE) {
             if (name %in% names(self$imports)) {
                 import <- self$imports[[name]]
-                print(import)
                 if (.debug) {
                     tmp_path <- paste0(self$dir, "/", basename(tempfile()), ".R")
                     writeLines(deparse(import), tmp_path)
@@ -106,7 +105,7 @@ piper <- R6::R6Class("piper",
         #' @param block_id a block id
         #' @param members block attributes
         update_namespace = function(block_id, members) {
-            self$namespace[[block_id]] <- members
+            self$namespace[[block_id]] <- setdiff(self$namespace[[block_id]], members)
         },
         #' @description initialize local environment
         #' @param .env a block id
