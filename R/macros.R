@@ -5,8 +5,11 @@
 #' @param rhs a valid R expression
 #' @export `%>>%`
 `%>>%` <- function(lhs, rhs) { # nolint
+    parent_env <- parent.frame(n = 1)
     if (exists("module_", envir = .GlobalEnv)) {
-        stack <- get("module_", envir = .GlobalEnv)$get_stack()
+        pipe <- get("module_", envir = .GlobalEnv)
+        stack <- pipe$get_stack()
+        parent_env <- pipe$get_env()
     } else {
         stack <- {}
         warning("Running %>>% without any pipe definitions.")
@@ -21,7 +24,7 @@
     error_guard(
         expr = substitute(rhs),
         args = args,
-        env = parent.frame(n = 1),
+        env = parent_env,
         stack = stack
     )
 }
@@ -102,7 +105,7 @@ error_guard <- function(expr, args, env, stack, pipe) {
             {
                 .pre_global_namespace <- take_snapshot()
 
-                eval(expr, envir = .GlobalEnv)
+                eval(expr, envir = env)
 
                 .post_global_namespace <- take_snapshot()
 
