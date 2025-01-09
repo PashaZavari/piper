@@ -47,7 +47,7 @@ piper <- R6::R6Class("piper",
             module <- paste0(args$id, ".__mod__")
             if (args$id %in% names(self$imports)) {
                 msg <- paste0("Multiple imports found for <", module, ">")
-                self$imports[[args$id]] <- module
+                self$imports[args$id] <- list(expr)
                 warning(msg)
                 print("############")
                 print(self$imports)
