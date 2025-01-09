@@ -43,15 +43,17 @@ piper <- R6::R6Class("piper",
         push = function(expr, ...) {
             local_env <- new.env()
             self$imports <- append(self$imports, list())
+            print(self$imports)
             args <- self$memory_map(expr, local_env)
             module <- paste0(args$id, ".__mod__")
             self$imports <- append(self$imports, setNames(list(expr), args$id))
-            self$blocks <- c(self$blocks, module)
-            is_duplicated <- duplicated(self$blocks)
-            if (any(is_duplicated)) {
-                is_duplicated <- unique(is_duplicated)
-                msg <- paste0("Multiple imports found for <", self$blocks[which(is_duplicated)], ">")
-                stop(msg)
+            print(">>>>>>>>>>>")
+            print(self$imports)
+            if (module %in% self$block) {
+                msg <- paste0("Multiple imports found for <", module, ">")
+                warning(msg)
+            } else {
+                self$blocks <- c(self$blocks, module)
             }
         },
         #' @description load a module into local memory
