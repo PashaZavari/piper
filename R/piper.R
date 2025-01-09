@@ -45,7 +45,7 @@ piper <- R6::R6Class("piper",
             self$imports <- append(self$imports, list())
             args <- self$memory_map(expr, local_env)
             module <- paste0(args$id, ".__mod__")
-            if (module %in% self$block) {
+            if (names(module) %in% names(self$block)) {
                 msg <- paste0("Multiple imports found for <", module, ">")
                 warning(msg)
                 print("############")
