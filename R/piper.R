@@ -106,7 +106,6 @@ piper <- R6::R6Class("piper",
         #' @param members block attributes
         update_namespace = function(block_id, members) {
             self$namespace[[block_id]] <- members
-            self$namespace[[block_id]] <- unique(self$namespace[[block_id]])
         },
         #' @description initialize local environment
         #' @param .env a block id

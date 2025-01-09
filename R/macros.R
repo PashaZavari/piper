@@ -185,7 +185,7 @@ compare_snapshots <- function(.before, .after, block_id, expr) {
     if (length(added) > 0) namespace <- c(added, namespace)
     if (length(removed) > 0) namespace <- namespace[-match(removed, namespace)]
 
-    pipe$update_namespace(block_id, namespace)
+    pipe$update_namespace(block_id, unique(namespace))
 
     vec_list <- list(
         added = added,
