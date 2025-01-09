@@ -1,4 +1,4 @@
-# piper <img src="https://github.com/PashaZavari/piper/blob/master/assets/piper.png?raw=true" align="right" height="138" />
+# piper <img src="https://github.com/PashaZavari/piper/blob/master/assets/logo.png?raw=true" align="right" height="138" />
 
 # Piper: Modular Pipelines with Dependency and Namespace Management in R
 
