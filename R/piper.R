@@ -34,9 +34,9 @@ piper <- R6::R6Class("piper",
                     print(">>>>>>>>>>")
                     print(tmp_path)
                     writeLines(deparse(import), tmp_path)
-                    private$attach_browser(tmp_path)
-                    response <- source(tmp_path)
-                    if (file.exists(tmp_path)) file.remove(tmp_path)
+                    # private$attach_browser(tmp_path)
+                    # response <- source(tmp_path)
+                    # if (file.exists(tmp_path)) file.remove(tmp_path)
                 } else {
                     response <- eval(import)
                 }
@@ -228,7 +228,7 @@ piper.load <- function(module, from, .env = rlang::caller_env(), ...) { #nolintr
 #' @description Purge module pipe.
 #' @export piper.purge
 piper.purge <- function(.env = parent.frame()) { #nolintr
-    rm(ls = list(module_$namespace), envir = .env)
+    rm(ls = module_$namespace, envir = .env)
     rm(ls = list(module_$get_stack()), envir = .env)
     rm(module_)
 }
