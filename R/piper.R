@@ -20,10 +20,19 @@ piper <- R6::R6Class("piper",
         #' @param name a computational block to execute
         #' @param .debug should debug mode get triggered, DEFAULT: FALSE
         pop = function(name, .debug = FALSE) {
+            print(name)
+            print(">>>>>>>>>>")
+            print(.debug)
+            print(">>>>>>>>>>")
             if (name %in% names(self$imports)) {
                 import <- self$imports[[name]]
+                print(import)
                 if (.debug) {
+                    print(">>>>>>>>>>")
+                    print(self$dir)
                     tmp_path <- paste0(self$dir, basename(tempfile()), ".R")
+                    print(">>>>>>>>>>")
+                    print(tmp_path)
                     writeLines(deparse(import), tmp_path)
                     private$attach_browser(tmp_path)
                     response <- source(tmp_path)
