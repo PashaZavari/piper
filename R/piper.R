@@ -34,7 +34,7 @@ piper <- R6::R6Class("piper",
                     print(">>>>>>>>>>")
                     print(tmp_path)
                     writeLines(deparse(import), tmp_path)
-                    # private$attach_browser(tmp_path)
+                    private$attach_browser(tmp_path)
                     # response <- source(tmp_path)
                     # if (file.exists(tmp_path)) file.remove(tmp_path)
                 } else {
