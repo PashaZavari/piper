@@ -30,7 +30,7 @@ piper <- R6::R6Class("piper",
                 if (.debug) {
                     print(">>>>>>>>>>")
                     print(self$dir)
-                    tmp_path <- paste0(self$dir, basename(tempfile()), ".R")
+                    tmp_path <- paste0(self$dir, "/", basename(tempfile()), ".R")
                     print(">>>>>>>>>>")
                     print(tmp_path)
                     writeLines(deparse(import), tmp_path)
