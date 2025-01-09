@@ -168,6 +168,9 @@ compare_snapshots <- function(.before, .after, block_id, expr) {
         namespace <- expr_trace$variables
     }
 
+    # Enforce uniqueness
+    namespace <- unique(namespace)
+
     # Find objects that were added or removed
     added <- setdiff(names(.after), names(.before))
 
@@ -185,7 +188,7 @@ compare_snapshots <- function(.before, .after, block_id, expr) {
     if (length(added) > 0) namespace <- c(added, namespace)
     if (length(removed) > 0) namespace <- namespace[-match(removed, namespace)]
 
-    pipe$update_namespace(block_id, unique(namespace))
+    pipe$update_namespace(block_id, namespace)
 
     vec_list <- list(
         added = added,
