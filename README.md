@@ -1,4 +1,4 @@
-![Piper Logo](assets/logo.png)
+# piper <img src="assets/logo.png" align="right" height="138" />
 
 # Piper: Modular Pipelines with Dependency and Namespace Management in R
 
