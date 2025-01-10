@@ -30,3 +30,88 @@ install.packages("devtools")
 
 # Install Piper
 devtools::install_github("PashaZavari/piper")
+
+```
+
+## Example
+
+```bash
+$ cd ~/[your-r-project-directory]
+$ mkdir R/modules
+$ touch R/modules/main.r
+```
+
+Open `main.r` in your favorite IDE (RStudio, vsCode etc...) and add your modules using the `piper` verbiage:
+
+```R
+# ./R/modules/main.r
+
+module_.push(
+    .this = {
+        id = "main_rng"
+        description = "Random number generator"
+        depends = {}
+        onError = {}
+    }, {
+        rng <- runif(n = 1000, min = -1, max = 1)
+    }
+)
+
+module_.push(
+    .this = {
+        id = "main_gm"
+        description = "Calculate Gaussian moments"
+        depends = list(
+            "main_rng"
+        )
+        onError = {}
+    }, {
+        # Calculate the mean and standard deviation of the random numbers
+        mean_value <- mean(rng)
+        sd_value <- sd(rng)
+
+        # Print the mean and standard deviation
+        cat("Mean:", mean_value, "\n")
+        cat("Standard Deviation:", sd_value, "\n")
+    }
+)
+
+module_.push(
+    .this = {
+        id = "main_cp"
+        description = "Calculate probability of a random number."
+        depends = list(
+            "main_gm"
+        )
+        onError = {}
+    }, {
+        z_score <- (random_number - mean_value) / sd_value
+        upper_prob <- pnorm(s_score, lower.tail = FALSE)
+    }
+)
+```
+
+Now we create an `accessor` to execute the pipeline. 
+
+```bash
+$ touch R/gaussian.R
+```
+
+Open `gaussian.R` and follow the logic below:
+
+```R
+# ./R/gaussian.R
+
+# Initializer pipeline
+piper.new()
+
+# Load modules
+piper.load(module = "main", from = ".")
+
+# Execute random number pipeline
+random_number <- 10
+module_.pop("main_rng", .debug = FALSE)
+module_.pop("main_gm", .debug = FALSE)
+module_.pop("main_cp", .debug = FALSE)
+```
+
