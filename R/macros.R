@@ -65,6 +65,8 @@ error_guard <- function(expr, args, env, stack, pipe) {
     block_id <- args$id
     on_error <- args$onError
     depends <- args$depends
+    export <- args$export
+    deport <- args$deport
     .id <- paste0("Block ID: {", block_id, "}")
     message(paste(Sys.time(), block_id, sep = " -> "))
 
@@ -105,7 +107,13 @@ error_guard <- function(expr, args, env, stack, pipe) {
             {
                 .pre_global_namespace <- take_snapshot()
 
-                eval(expr, envir = env)
+                # eval(expr, envir = env)
+                populate_env(
+                    expr = expr,
+                    env = env,
+                    export = export,
+                    deport = deport
+                )
 
                 .post_global_namespace <- take_snapshot()
 
@@ -364,4 +372,28 @@ parse_error <- function(.id, msg, call_trace, on_error) {
     )
 
     stop(paste0(.id, ", Message: {", on_error, "}, Error: {", message, "}, Trace: {", call_trace, "}"))
+}
+
+populate_env <- function(expr, env, export = NULL, deport = NULL) {
+    temp_env <- new.env(parent = env)  # Create a temporary environment
+
+    eval(expr, envir = temp_env)  # Evaluate the expression in temp_env
+
+    all_vars <- ls(temp_env)  # Get all created variables
+
+    # Determine final variables to copy
+    if (!is.null(export)) {
+        final_vars <- intersect(all_vars, export)
+    } else {
+        final_vars <- all_vars  # If no export filter, consider all
+    }
+
+    if (!is.null(deport)) {
+        final_vars <- setdiff(final_vars, deport)  # Remove deport variables
+    }
+
+    # Copy selected variables to the target environment
+    for (name in final_vars) {
+        assign(name, get(name, envir = temp_env), envir = env)
+    }
 }
