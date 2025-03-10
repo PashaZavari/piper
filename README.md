@@ -114,4 +114,28 @@ module_.pop("main_rng", .debug = FALSE)
 module_.pop("main_gm", .debug = FALSE)
 module_.pop("main_cp", .debug = FALSE)
 ```
+You can also export specific variables from each module or deport ones that you wish to drop: 
 
+```R
+module_.push(
+    .this = {
+        id = "main_gm"
+        description = "Calculate Gaussian moments"
+        depends = list(
+            "main_rng"
+        )
+        export = list("mean_value", "sd_value")
+        deport = list("median_value")
+        onError = {}
+    }, {
+        # Calculate the mean and standard deviation of the random numbers
+        median_value <- median(rng)
+        mean_value <- mean(rng)
+        sd_value <- sd(rng)
+
+        # Print the mean and standard deviation
+        cat("Mean:", mean_value, "\n")
+        cat("Standard Deviation:", sd_value, "\n")
+    }
+)
+```
