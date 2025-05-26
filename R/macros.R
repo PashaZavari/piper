@@ -76,10 +76,10 @@ error_guard <- function(expr, args, env, stack, pipe) {
             is_missing <- setdiff(depends, stack)
             if (length(is_missing) > 0) {
                 for (import in depends) {
-                    auto_load <- try(pipe$pop(import), silent = FALSE)
+                    auto_load <- try(pipe$compute(import), silent = FALSE)
                     message("*** Missing import for requested block:", import, ". Attempting auto-load...")
                     if (inherits(auto_load, "try-error")) {
-                        pipe$pop_stack(import)
+                        pipe$compute_stack(import)
                         msg <- paste("Auto-load failed for requested block import:", import)
                         stop(msg)
                     } else {
@@ -89,10 +89,10 @@ error_guard <- function(expr, args, env, stack, pipe) {
             }
         } else {
             for (import in depends) {
-                auto_load <- try(pipe$pop(import), silent = TRUE)
+                auto_load <- try(pipe$compute(import), silent = TRUE)
                 message("*** Missing import for requested block:", import, ". Attempting auto-load...")
                 if (inherits(auto_load, "try-error")) {
-                    pipe$pop_stack(import)
+                    pipe$compute_stack(import)
                     msg <- paste("Auto-load failed for requested block import:", import)
                     stop(msg)
                 } else {

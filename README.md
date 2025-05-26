@@ -110,9 +110,9 @@ piper.load(module = "main", from = ".")
 
 # Execute random number pipeline
 random_number <- 10
-module_.pop("main_rng", .debug = FALSE)
-module_.pop("main_gm", .debug = FALSE)
-module_.pop("main_cp", .debug = FALSE)
+module_.compute("main_rng", .debug = FALSE)
+module_.compute("main_gm", .debug = FALSE)
+module_.compute("main_cp", .debug = FALSE)
 ```
 You can also export specific variables from each module or deport ones that you wish to drop: 
 

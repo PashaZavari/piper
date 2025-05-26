@@ -19,7 +19,7 @@ piper <- R6::R6Class("piper",
         #' @description execute a pipe block from the top of the stack
         #' @param name a computational block to execute
         #' @param .debug should debug mode get triggered, DEFAULT: FALSE
-        pop = function(name, .debug = FALSE) {
+        compute = function(name, .debug = FALSE) {
             if (name %in% names(self$imports)) {
                 import <- self$imports[[name]]
                 if (.debug) {
@@ -89,7 +89,7 @@ piper <- R6::R6Class("piper",
         },
         #' @description pop block from stack
         #' @param name a block id
-        pop_stack = function(name) {
+        compute_stack = function(name) {
             self$stack <- setdiff(self$stack, name)
         },
         #' @description fetch stack namespace
@@ -245,12 +245,12 @@ module_.push <- function(.this = {}, .with = {}, ...) { #nolintr
     module_$push(substitute(.this %>>% .with), ...)
 }
 
-#' @title module_.pop
+#' @title module_.compute
 #' @description Execute a piper module.
 #' @param ... a list of language expressions
-#' @export module_.pop
-module_.pop <- function(...) { #nolintr
-    module_$pop(...)
+#' @export module_.compute
+module_.compute <- function(...) { #nolintr
+    module_$compute(...)
 }
 
 #' @title module_.env
