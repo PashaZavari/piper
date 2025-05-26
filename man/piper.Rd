@@ -10,11 +10,11 @@ Deep asymmetric object extraction.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-piper-new}{\code{piper$new()}}
-\item \href{#method-piper-pop}{\code{piper$pop()}}
+\item \href{#method-piper-compute}{\code{piper$compute()}}
 \item \href{#method-piper-push}{\code{piper$push()}}
 \item \href{#method-piper-load}{\code{piper$load()}}
 \item \href{#method-piper-map_pipeline}{\code{piper$map_pipeline()}}
-\item \href{#method-piper-pop_stack}{\code{piper$pop_stack()}}
+\item \href{#method-piper-compute_stack}{\code{piper$compute_stack()}}
 \item \href{#method-piper-get_stack}{\code{piper$get_stack()}}
 \item \href{#method-piper-get_namespace}{\code{piper$get_namespace()}}
 \item \href{#method-piper-update_namespace}{\code{piper$update_namespace()}}
@@ -41,12 +41,12 @@ Deep asymmetric object extraction.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-piper-pop"></a>}}
-\if{latex}{\out{\hypertarget{method-piper-pop}{}}}
-\subsection{Method \code{pop()}}{
+\if{html}{\out{<a id="method-piper-compute"></a>}}
+\if{latex}{\out{\hypertarget{method-piper-compute}{}}}
+\subsection{Method \code{compute()}}{
 execute a pipe block from the top of the stack
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{piper$pop(name, .debug = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{piper$compute(name, .debug = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -114,12 +114,12 @@ map modules pipeline
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-piper-pop_stack"></a>}}
-\if{latex}{\out{\hypertarget{method-piper-pop_stack}{}}}
-\subsection{Method \code{pop_stack()}}{
+\if{html}{\out{<a id="method-piper-compute_stack"></a>}}
+\if{latex}{\out{\hypertarget{method-piper-compute_stack}{}}}
+\subsection{Method \code{compute_stack()}}{
 pop block from stack
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{piper$pop_stack(name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{piper$compute_stack(name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
