@@ -307,6 +307,11 @@ trace_expr <- function(expr) {
         # If it's a language construct, recurse over each component
         if (is.call(e) || is.expression(e)) {
             for (sub_expr in as.list(e)) {
+                # Skip missing arguments (this is the key fix)
+                if (!missing(sub_expr) && !is.null(sub_expr)) {
+                    # Update results as we go deeper
+                    results <- walk_expr(sub_expr, results)
+                }
                 # Update results as we go deeper
                 results <- walk_expr(sub_expr, results)
             }
