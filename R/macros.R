@@ -281,8 +281,8 @@ trace_expr <- function(expr) {
 
     # Recursive function to walk through each expression
     walk_expr <- function(e, results) {
-        # Check if the expression is an assignment with various operators
-        if (is.call(e)) {
+        # Only process if e is not NULL and is a call or expression
+        if (!is.null(e) && (is.call(e) || is.expression(e))) {
             op <- as.character(e[[1]])
 
             # Identify assignment operators and process accordingly
@@ -296,22 +296,16 @@ trace_expr <- function(expr) {
                 }
 
                 # Check if the assigned value is a function
-                if (is.call(value) && value[[1]] == as.name("function")) {
+                if (is.call(value) && as.character(value[[1]]) == "function") {
                     results$functions <- c(results$functions, var_name)
                 } else {
                     results$variables <- c(results$variables, var_name)
                 }
             }
-        }
 
-        # If it's a language construct, recurse over each component
-        if (is.call(e) || is.expression(e)) {
-            # Use length and indexing instead of as.list to avoid missing argument issues
-            for (i in seq_along(e)) {
-                # Use try() to catch any missing arguments and skip them
-                sub_expr <- try(e[[i]], silent = TRUE)
-                if (!inherits(sub_expr, "try-error") && !is.null(sub_expr)) {
-                    # Update results as we go deeper
+            # Recurse over each component, ensuring it's a valid sub-expression
+            for (sub_expr in as.list(e)) {
+                if (!is.null(sub_expr) && (is.call(sub_expr) || is.expression(sub_expr))) {
                     results <- walk_expr(sub_expr, results)
                 }
             }
