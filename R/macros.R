@@ -276,16 +276,12 @@ pretty_print_table <- function(data) {
 
 # Function to extract variable and function declarations
 trace_expr <- function(expr) {
-    # Initialize lists for variables and functions
     results <- list(variables = character(), functions = character())
 
-    # Recursive function to walk through each expression
     walk_expr <- function(e, results) {
-        # Only process if e is not NULL and is a call or expression
-        if (!is.null(e) && (is.call(e) || is.expression(e))) {
+        if (is.call(e)) {
             op <- as.character(e[[1]])
 
-            # Identify assignment operators and process accordingly
             if (op %in% c("<-", "=", "->", "assign")) {
                 if (op == "assign") {
                     var_name <- as.character(e[[2]])
@@ -295,30 +291,31 @@ trace_expr <- function(expr) {
                     value <- if (op == "->") e[[2]] else e[[3]]
                 }
 
-                # Check if the assigned value is a function
-                if (is.call(value) && as.character(value[[1]]) == "function") {
+                if (is.call(value) && value[[1]] == as.name("function")) {
                     results$functions <- c(results$functions, var_name)
                 } else {
                     results$variables <- c(results$variables, var_name)
                 }
             }
 
-            # Recurse over each component, ensuring it's a valid sub-expression
-            for (sub_expr in as.list(e)) {
-                if (!is.null(sub_expr) && (is.call(sub_expr) || is.expression(sub_expr))) {
-                    results <- walk_expr(sub_expr, results)
+            # Only recurse if the call has arguments
+            if (length(e) > 1) {
+                for (i in seq_along(e)) {
+                    if (i > 1) {  # Skip operator itself
+                        results <- walk_expr(e[[i]], results)
+                    }
                 }
+            }
+        } else if (is.expression(e)) {
+            for (sub_expr in e) {
+                results <- walk_expr(sub_expr, results)
             }
         }
 
         return(results)
     }
 
-    # Start the recursion
-    final_results <- walk_expr(expr, results)
-
-    # Return unique variables and functions
-    list(variables = unique(final_results$variables), functions = unique(final_results$functions))
+    walk_expr(expr, results)
 }
 
 parse_error <- function(.id, msg, call_trace, on_error) {
