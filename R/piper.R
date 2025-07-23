@@ -211,6 +211,66 @@ piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) { #nolintr
     }
 }
 
+#' @title piper.make
+#' @description Create new piper root
+#' @param child the desired sub-directory containing pipe modules
+#' @param parent the desired parent directory to house module assets
+#' @param mode rw+ permission settings
+#' @export piper.make
+piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
+    # Check if parent directory exists
+    if (!dir.exists(parent_dir)) {
+        warning(paste("Parent directory '", parent, "' does not exist. Creating it first.", sep = ""))
+
+        # Try to create the parent directory
+        tryCatch(
+            {
+                dir.create(parent, mode = mode, recursive = TRUE)
+                cat(paste("Created parent directory: '", parent, "'\n", sep = ""))
+            },
+            error = function(e) {
+                stop(paste("Failed to create parent directory '", parent, "': ", e$message, sep = ""))
+            }
+        )
+    }
+
+    # Create the full path for the subdirectory
+    sub_dir_path <- file.path(parent, child)
+
+    # Check if subdirectory already exists
+    if (dir.exists(sub_dir_path)) {
+        message(paste("Subdirectory '", sub_dir_path, "' already exists.", sep = ""))
+        return(invisible(sub_dir_path))
+    }
+
+    # Try to create the subdirectory
+    tryCatch(
+        {
+            dir.create(sub_dir_path, mode = mode, recursive = TRUE)
+            cat(paste("Successfully created subdirectory: '", sub_dir_path, "'\n", sep = ""))
+            return(invisible(sub_dir_path))
+        },
+        error = function(e) {
+            if (grepl("Permission denied", e$message)) {
+                stop(paste("Permission denied: Cannot create subdirectory '", sub_dir_path,
+                    "'. Check your write permissions for the parent directory.",
+                    sep = ""
+                ))
+            } else {
+                stop(paste("Failed to create subdirectory '", sub_dir_path, "': ", e$message, sep = ""))
+            }
+        }
+    )
+}
+
+#' @title piper.module
+#' @description Create new module library
+#' @param name a library name
+#' @export piper.module
+piper.module <- function(name) {
+
+}
+
 #' @title piper.load
 #' @description Load a newly initialized piper instance.
 #' @param module the name of the source asset
@@ -258,4 +318,11 @@ module_.compute <- function(...) { #nolintr
 #' @export module_.env
 module_.env <- function() { #nolintr
     module_$get_env()
+}
+
+#' @title module_.new
+#' @description Create new library method.
+#' @export module_.new
+module_.new <- function(library, method, version) { #nolintr
+
 }
