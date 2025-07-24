@@ -219,7 +219,7 @@ piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) { #nolintr
 #' @export piper.make
 piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
     # Check if parent directory exists
-    if (!dir.exists(parent_dir)) {
+    if (!dir.exists(parent)) {
         warning(paste("Parent directory '", parent, "' does not exist. Creating it first.", sep = ""))
 
         # Try to create the parent directory
@@ -266,9 +266,42 @@ piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
 #' @title piper.module
 #' @description Create new module library
 #' @param name a library name
+#' @param pipe the root pipe to use
+#' @param mode rw+ permission settings
 #' @export piper.module
-piper.module <- function(name) {
+piper.module <- function(name, pipe, mode = "0755") {
+      # Check if parent directory exists
+    if (!dir.exists(pipe)) {
+        stop(paste("Root pipe '", pipe, "' does not exist.", sep = ""))
+    }
 
+   # Create the full path for the subdirectory
+    sub_dir_path <- file.path(pipe, name)
+
+    # Check if subdirectory already exists
+    if (dir.exists(sub_dir_path)) {
+        message(paste("Library '", sub_dir_path, "' already exists.", sep = ""))
+        return(invisible(sub_dir_path))
+    }
+
+    # Try to create the subdirectory
+    tryCatch(
+        {
+            dir.create(sub_dir_path, mode = mode, recursive = TRUE)
+            cat(paste("Successfully initialized library: '", sub_dir_path, "'\n", sep = ""))
+            return(invisible(sub_dir_path))
+        },
+        error = function(e) {
+            if (grepl("Permission denied", e$message)) {
+                stop(paste("Permission denied: Cannot initialize library '", sub_dir_path,
+                    "'. Check your write permissions for the root pipe",
+                    sep = ""
+                ))
+            } else {
+                stop(paste("Failed to initialize library '", sub_dir_path, "': ", e$message, sep = ""))
+            }
+        }
+    )
 }
 
 #' @title piper.load
