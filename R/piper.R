@@ -267,16 +267,19 @@ piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
 #' @description Create new module library
 #' @param name a library name
 #' @param pipe the root pipe to use
+#' @param parent the desired parent directory to house module assets
 #' @param mode rw+ permission settings
 #' @export piper.module
-piper.module <- function(name, pipe, mode = "0755") {
+piper.module <- function(name, pipe, parent = "R", mode = "0755") {
+    # Create the full path for the subdirectory
+    sub_pipe_path <- file.path(parent, pipe)
       # Check if parent directory exists
-    if (!dir.exists(pipe)) {
+    if (!dir.exists(sub_pipe_path)) {
         stop(paste("Root pipe '", pipe, "' does not exist.", sep = ""))
     }
 
    # Create the full path for the subdirectory
-    sub_dir_path <- file.path(pipe, name)
+    sub_dir_path <- file.path(parent, pipe, name)
 
     # Check if subdirectory already exists
     if (dir.exists(sub_dir_path)) {
@@ -354,8 +357,59 @@ module_.env <- function() { #nolintr
 }
 
 #' @title module_.new
+#' @param pipe module root pipe, DEFAULT: modules
+#' @param library module library
+#' @param method a method name
+#' @param version library version
+#' @param parent the desired parent directory to house module assets
 #' @description Create new library method.
 #' @export module_.new
-module_.new <- function(library, method, version) { #nolintr
+module_.new <- function(pipe, library, method, version, parent = "R") { #nolintr
+    #Check to see if path exists: (eg. modules/accounting)
+    # Check if parent directory exists
+    sub_pipe_path <- file.path(parent, pipe)
+    if (!dir.exists(sub_pipe_path)) {
+        stop(paste("Root pipe '", pipe, "' does not exist.", sep = ""))
+    }
 
+    version_path <-  file.path(parent, pipe, library, version) 
+    # Try to create the subdirectory
+    tryCatch(
+        {
+            dir.create(version_path, mode = mode, recursive = TRUE)
+            cat(paste("Successfully accessed module: '", version_path, "'\n", sep = ""))
+            return(invisible(version_path))
+        },
+        error = function(e) {
+            if (grepl("Permission denied", e$message)) {
+                stop(paste("Permission denied: Cannot access module '", version_path,
+                    "'. Check your write permissions for the root pipe",
+                    sep = ""
+                ))
+            } else {
+                stop(paste("Failed to access module '", version_path, "': ", e$message, sep = ""))
+            }
+        }
+    )
+
+    local_path <- paste(version_path, "main", ".r", sep = "/")
+    # Read the entire source file content
+    file_content <- readLines(con = file_path)
+
+    new_method <- "
+        module_.push(
+            .this = {
+                id = ", method,"
+                description = ''
+                depends = {}
+                onError = {}
+            }, {
+                ### INSERT CODE HERE ###
+            }
+        )
+    "
+    new_content <- c(file_content, new_method)
+
+    # Write the modified content back to the file
+    writeLines(new_content, file_path)
 }
