@@ -84,7 +84,7 @@ insert a pipe block into the top of the stack
 \subsection{Method \code{load()}}{
 load a module into local memory
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{piper$load(module, from, .env = self$get_env(), src = "R", dir = "modules")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{piper$load(module, from, .env = self$get_env(), src = "R++", dir = "modules")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

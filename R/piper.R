@@ -60,7 +60,7 @@ piper <- R6::R6Class("piper",
         #' @param .env local pipe environment
         #' @param src binary type
         #' @param dir the module subdirectory
-        load = function(module, from, .env = self$get_env(), src = "R", dir = "modules") {
+        load = function(module, from, .env = self$get_env(), src = "R++", dir = "modules") {
             args <- list(local_env_ = .env)
             file <- paste(module, "R", sep = ".")
             path <- paste(from, src, "modules", file, sep = "/")
@@ -213,29 +213,29 @@ piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) { #nolintr
 
 #' @title piper.make
 #' @description Create new piper root
-#' @param child the desired sub-directory containing pipe modules
-#' @param parent the desired parent directory to house module assets
+#' @param pipe the desired sub-directory containing pipe modules
+#' @param root the desired parent directory to house module assets
 #' @param mode rw+ permission settings
 #' @export piper.make
-piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
-    # Check if parent directory exists
-    if (!dir.exists(parent)) {
-        warning(paste("Parent directory '", parent, "' does not exist. Creating it first.", sep = ""))
+piper.make <- function(pipe, root = "R++", mode = "0755") { #nolintr
+    # Check if root directory exists
+    if (!dir.exists(root)) {
+        warning(paste("Root directory '", root, "' does not exist. Creating it first.", sep = ""))
 
-        # Try to create the parent directory
+        # Try to create the root directory
         tryCatch(
             {
-                dir.create(parent, mode = mode, recursive = TRUE)
-                cat(paste("Created parent directory: '", parent, "'\n", sep = ""))
+                dir.create(root, mode = mode, recursive = TRUE)
+                cat(paste("Created root directory: '", root, "'\n", sep = ""))
             },
             error = function(e) {
-                stop(paste("Failed to create parent directory '", parent, "': ", e$message, sep = ""))
+                stop(paste("Failed to create root directory '", root, "': ", e$message, sep = ""))
             }
         )
     }
 
     # Create the full path for the subdirectory
-    sub_dir_path <- file.path(parent, child)
+    sub_dir_path <- file.path(root, pipe)
 
     # Check if subdirectory already exists
     if (dir.exists(sub_dir_path)) {
@@ -253,7 +253,7 @@ piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
         error = function(e) {
             if (grepl("Permission denied", e$message)) {
                 stop(paste("Permission denied: Cannot create subdirectory '", sub_dir_path,
-                    "'. Check your write permissions for the parent directory.",
+                    "'. Check your write permissions for the root directory.",
                     sep = ""
                 ))
             } else {
@@ -270,7 +270,7 @@ piper.make <- function(child, parent = "R", mode = "0755") { #nolintr
 #' @param parent the desired parent directory to house module assets
 #' @param mode rw+ permission settings
 #' @export piper.module
-piper.module <- function(name, pipe, parent = "R", mode = "0755") {
+piper.module <- function(name, pipe, parent = "R++", mode = "0755") {
     # Create the full path for the subdirectory
     sub_pipe_path <- file.path(parent, pipe)
       # Check if parent directory exists
@@ -302,6 +302,47 @@ piper.module <- function(name, pipe, parent = "R", mode = "0755") {
                 ))
             } else {
                 stop(paste("Failed to initialize library '", sub_dir_path, "': ", e$message, sep = ""))
+            }
+        }
+    )
+}
+
+
+#' @title piper.brew
+#' @param pipe module root pipe, DEFAULT: modules
+#' @param module module module
+#' @param method a method name
+#' @param version library version
+#' @param parent the desired parent directory to house module assets
+#' @param mode rw+ permission settings
+#' @description Create new library method.
+#' @export piper.brew
+piper.brew <- function(pipe, module, method, version, header = "main.r", parent = "R++", mode = "0755") { #nolintr
+    #Check to see if path exists: (eg. modules/accounting)
+    # Check if parent directory exists
+    sub_pipe_path <- file.path(parent, pipe)
+    if (!dir.exists(sub_pipe_path)) {
+        stop(paste("Root pipe '", pipe, "' does not exist.", sep = ""))
+    }
+
+    version_path <-  file.path(parent, pipe, module, version) 
+    # Try to create the subdirectory
+    tryCatch(
+        {
+            dir.create(version_path, mode = mode, recursive = TRUE)
+            cat(paste("Successfully accessed module: '", version_path, "'\n", sep = ""))
+            header_path <- file.path(version_path, header)
+            file.create(header_path)
+            return(invisible(version_path))
+        },
+        error = function(e) {
+            if (grepl("Permission denied", e$message)) {
+                stop(paste("Permission denied: Cannot access module '", version_path,
+                    "'. Check your write permissions for the root pipe",
+                    sep = ""
+                ))
+            } else {
+                stop(paste("Failed to access module '", version_path, "': ", e$message, sep = ""))
             }
         }
     )
@@ -354,62 +395,4 @@ module_.compute <- function(...) { #nolintr
 #' @export module_.env
 module_.env <- function() { #nolintr
     module_$get_env()
-}
-
-#' @title module_.new
-#' @param pipe module root pipe, DEFAULT: modules
-#' @param library module library
-#' @param method a method name
-#' @param version library version
-#' @param parent the desired parent directory to house module assets
-#' @description Create new library method.
-#' @export module_.new
-module_.new <- function(pipe, library, method, version, parent = "R") { #nolintr
-    #Check to see if path exists: (eg. modules/accounting)
-    # Check if parent directory exists
-    sub_pipe_path <- file.path(parent, pipe)
-    if (!dir.exists(sub_pipe_path)) {
-        stop(paste("Root pipe '", pipe, "' does not exist.", sep = ""))
-    }
-
-    version_path <-  file.path(parent, pipe, library, version) 
-    # Try to create the subdirectory
-    tryCatch(
-        {
-            dir.create(version_path, mode = mode, recursive = TRUE)
-            cat(paste("Successfully accessed module: '", version_path, "'\n", sep = ""))
-            return(invisible(version_path))
-        },
-        error = function(e) {
-            if (grepl("Permission denied", e$message)) {
-                stop(paste("Permission denied: Cannot access module '", version_path,
-                    "'. Check your write permissions for the root pipe",
-                    sep = ""
-                ))
-            } else {
-                stop(paste("Failed to access module '", version_path, "': ", e$message, sep = ""))
-            }
-        }
-    )
-
-    local_path <- paste(version_path, "main", ".r", sep = "/")
-    # Read the entire source file content
-    file_content <- readLines(con = file_path)
-
-    new_method <- paste0("
-        module_.push(
-            .this = {
-                id = ", method,"
-                description = ''
-                depends = {}
-                onError = {}
-            }, {
-                ### INSERT CODE HERE ###
-            }
-        )
-    ")
-    new_content <- c(file_content, new_method)
-
-    # Write the modified content back to the file
-    writeLines(new_content, file_path)
 }
