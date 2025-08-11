@@ -396,7 +396,7 @@ module_.new <- function(pipe, library, method, version, parent = "R") { #nolintr
     # Read the entire source file content
     file_content <- readLines(con = file_path)
 
-    new_method <- "
+    new_method <- paste0("
         module_.push(
             .this = {
                 id = ", method,"
@@ -407,7 +407,7 @@ module_.new <- function(pipe, library, method, version, parent = "R") { #nolintr
                 ### INSERT CODE HERE ###
             }
         )
-    "
+    ")
     new_content <- c(file_content, new_method)
 
     # Write the modified content back to the file
