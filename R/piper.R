@@ -60,11 +60,11 @@ piper <- R6::R6Class("piper",
         #' @param .env local pipe environment
         #' @param src binary type
         #' @param dir the module subdirectory
-        load = function(module, from, .env = self$get_env(), src = "R++", dir = "modules") {
+        load = function(module, from, .env = self$get_env(), header = "main.r", src = "R++", pipe = "modules", version = "") {
             args <- list(local_env_ = .env)
-            file <- paste(module, "R", sep = ".")
-            path <- paste(from, src, "modules", file, sep = "/")
-            self$dir <- paste(from, src, "modules", sep = "/")
+            file <- paste0(module, version, header)
+            path <- paste(from, src, pipe, file, sep = "/")
+            self$dir <- paste(from, src, pipe, sep = "/")
             source(path, local = list2env(args))
             self$map_pipeline()
         },
@@ -306,7 +306,6 @@ piper.module <- function(name, pipe, parent = "R++", mode = "0755") {
         }
     )
 }
-
 
 #' @title piper.brew
 #' @param pipe module root pipe, DEFAULT: modules
