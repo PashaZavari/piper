@@ -62,7 +62,7 @@ piper <- R6::R6Class("piper",
         #' @param dir the module subdirectory
         load = function(module, from, .env = self$get_env(), header = "main.r", src = "R++", pipe = "modules", version = "") {
             args <- list(local_env_ = .env)
-            file <- paste0(module, version, header)
+            file <- paste(module, version, header, sep = "/")
             path <- paste(from, src, pipe, file, sep = "/")
             self$dir <- paste(from, src, pipe, sep = "/")
             source(path, local = list2env(args))
@@ -353,7 +353,7 @@ piper.brew <- function(pipe, module, method, version, header = "main.r", parent 
 #' @param from target directory
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
 #' @export piper.load
-piper.load <- function(module, from, .env = rlang::caller_env(), ...) { #nolintr
+piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) { #nolintr
     module_$set_env(.env = .env)
     module_$load(module, from, ...)
 }
