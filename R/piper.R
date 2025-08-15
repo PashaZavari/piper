@@ -265,12 +265,12 @@ piper.make <- function(pipe, root = "R++", mode = "0755") { #nolintr
 
 #' @title piper.module
 #' @description Create new module library
-#' @param name a library name
 #' @param pipe the root pipe to use
+#' @param module a library name
 #' @param parent the desired parent directory to house module assets
 #' @param mode rw+ permission settings
 #' @export piper.module
-piper.module <- function(name, pipe, parent = "R++", mode = "0755") {
+piper.module <- function(pipe, module, parent = "R++", mode = "0755") {
     # Create the full path for the subdirectory
     sub_pipe_path <- file.path(parent, pipe)
       # Check if parent directory exists
@@ -279,7 +279,7 @@ piper.module <- function(name, pipe, parent = "R++", mode = "0755") {
     }
 
    # Create the full path for the subdirectory
-    sub_dir_path <- file.path(parent, pipe, name)
+    sub_dir_path <- file.path(parent, pipe, module)
 
     # Check if subdirectory already exists
     if (dir.exists(sub_dir_path)) {
