@@ -33,18 +33,36 @@ devtools::install_github("PashaZavari/piper")
 
 ```
 
+## Setup
+
+```R
+# Loaded piper
+library(piper)
+
+# Initialize Instance [Execute on each call]
+piper.new()
+
+# Create fresh pipe project [Execute only during project setup]
+piper.make(pipe = "package_pipe")
+
+# Attach new module library [Execute only during project setup]
+piper.module(pipe = "package_pipe", module = "xyz_module")
+
+# Build version specific assets [Execute only during release version upgrade]
+piper.brew(pipe = "package_pipe", module = "xyz_module", version = "v1.0", header = "main.r")
+
+```
+
 ## Example
 
 ```bash
-$ cd ~/[your-r-project-directory]
-$ mkdir R/modules
-$ touch R/modules/main.r
+$ cd ~/[package-root-directory]
 ```
 
-Open `main.r` in your favorite IDE (RStudio, vsCode etc...) and add your modules using the `piper` verbiage:
+Open `~/[package-root-directory]/R++/package_pipe/xyz_module/v1.0/main.r` in your favorite IDE (RStudio, vsCode, Positron etc...) and add your modules using the `piper` verbiage:
 
 ```R
-# ./R/modules/main.r
+#./[package-root-directory]/R++/package_pipe/xyz_module/v1.0/main.r
 
 module_.push(
     .this = {
@@ -102,11 +120,11 @@ Open `gaussian.R` and follow the logic below:
 ```R
 # ./R/gaussian.R
 
-# Initializer pipeline
+# Initialize pipeline
 piper.new()
 
-# Load modules
-piper.load(module = "main", from = ".")
+# Load module assets [Execute on every function call]
+piper.load(pipe = "package_pipe", module = "xyz_module", version = "v1.0", header = "main.r")
 
 # Execute random number pipeline
 random_number <- 10
