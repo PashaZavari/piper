@@ -4,7 +4,8 @@
 #' @param lhs a valid R expression
 #' @param rhs a valid R expression
 #' @export `%>>%`
-`%>>%` <- function(lhs, rhs) { # nolint
+`%>>%` <- function(lhs, rhs) {
+    # nolint
     parent_env <- parent.frame(n = 1)
     if (exists("module_", envir = .GlobalEnv)) {
         pipe <- get("module_", envir = .GlobalEnv)
@@ -43,10 +44,20 @@
         expecting <- typeof(rhs)
         actual <- typeof(value)
         if (actual != expecting && !is.null(rhs)) {
-            msg <- paste0("Validation failed for: ", deparse(substitute(lhs)), " \n Expecting -> {", expecting, "} \n Actual -> {", actual, "}")
+            msg <- paste0(
+                "Validation failed for: ",
+                deparse(substitute(lhs)),
+                " \n Expecting -> {",
+                expecting,
+                "} \n Actual -> {",
+                actual,
+                "}"
+            )
             stop(msg)
         } else {
-            if (length(value) == 0) value <- NA
+            if (length(value) == 0) {
+                value <- NA
+            }
             return(value)
         }
     }
@@ -67,6 +78,7 @@ error_guard <- function(expr, args, env, stack, pipe) {
     depends <- args$depends
     export <- args$export
     deport <- args$deport
+    imports <- args$imports
     .id <- paste0("Block ID: {", block_id, "}")
     message(paste(Sys.time(), block_id, sep = " -> "))
 
@@ -77,10 +89,17 @@ error_guard <- function(expr, args, env, stack, pipe) {
             if (length(is_missing) > 0) {
                 for (import in depends) {
                     auto_load <- try(pipe$compute(import), silent = FALSE)
-                    message("*** Missing import for requested block:", import, ". Attempting auto-load...")
+                    message(
+                        "*** Missing import for requested block:",
+                        import,
+                        ". Attempting auto-load..."
+                    )
                     if (inherits(auto_load, "try-error")) {
                         pipe$compute_stack(import)
-                        msg <- paste("Auto-load failed for requested block import:", import)
+                        msg <- paste(
+                            "Auto-load failed for requested block import:",
+                            import
+                        )
                         stop(msg)
                     } else {
                         message("Auto-load successful!")
@@ -90,16 +109,31 @@ error_guard <- function(expr, args, env, stack, pipe) {
         } else {
             for (import in depends) {
                 auto_load <- try(pipe$compute(import), silent = TRUE)
-                message("*** Missing import for requested block:", import, ". Attempting auto-load...")
+                message(
+                    "*** Missing import for requested block:",
+                    import,
+                    ". Attempting auto-load..."
+                )
                 if (inherits(auto_load, "try-error")) {
                     pipe$compute_stack(import)
-                    msg <- paste("Auto-load failed for requested block import:", import)
+                    msg <- paste(
+                        "Auto-load failed for requested block import:",
+                        import
+                    )
                     stop(msg)
                 } else {
                     message("Auto-load successful!")
                 }
             }
         }
+    }
+
+    # Validate imports availability after dependencies are resolved
+    # Refresh stack in case dependencies were auto-loaded
+    if (!is.null(imports) && length(imports) > 0) {
+        pipe <- get("module_", envir = .GlobalEnv)
+        stack <- pipe$get_stack() # Refresh stack after auto-loading
+        pipe$validate_imports_availability(imports, env, stack, block_id)
     }
 
     tryCatch(
@@ -128,18 +162,41 @@ error_guard <- function(expr, args, env, stack, pipe) {
             },
             warning = function(w) {
                 msg <- gsub(pattern = '"', replacement = "'", w$message)
-                call_trace <- gsub(pattern = '"', replacement = "'", deparse1(w$call, collapse = ""))
-                message(paste0(.id, ", Warning: {", msg, "}, Trace: {", call_trace, "}"))
+                call_trace <- gsub(
+                    pattern = '"',
+                    replacement = "'",
+                    deparse1(w$call, collapse = "")
+                )
+                message(paste0(
+                    .id,
+                    ", Warning: {",
+                    msg,
+                    "}, Trace: {",
+                    call_trace,
+                    "}"
+                ))
                 invokeRestart("muffleWarning")
             }
         ),
         error = function(e) {
             msg <- gsub(pattern = '"', replacement = "'", e$message)
             if (grepl(pattern = "locked binding", x = msg)) {
-                var <- gsub(pattern = ".*?'(.*?)'.*", replacement = "\\1", x = msg)
-                message(paste0("Variable '", var, "' is already locked to an overwrite binding."))
+                var <- gsub(
+                    pattern = ".*?'(.*?)'.*",
+                    replacement = "\\1",
+                    x = msg
+                )
+                message(paste0(
+                    "Variable '",
+                    var,
+                    "' is already locked to an overwrite binding."
+                ))
             } else {
-                call_trace <- gsub(pattern = '"', replacement = "'", deparse1(e$call, collapse = ""))
+                call_trace <- gsub(
+                    pattern = '"',
+                    replacement = "'",
+                    deparse1(e$call, collapse = "")
+                )
                 parse_error(.id, msg, call_trace, on_error)
             }
         }
@@ -149,15 +206,22 @@ error_guard <- function(expr, args, env, stack, pipe) {
 # Function to create a checksum using serialize and sum (rudimentary checksum)
 create_checksum <- function(obj) {
     raw_obj <- serialize(obj, NULL)
-    return(sum(as.integer(raw_obj)))  # Sum of serialized byte stream as a simple checksum
+    return(sum(as.integer(raw_obj))) # Sum of serialized byte stream as a simple checksum
 }
 
 # Function to take a snapshot of the global environment using checksums
 take_snapshot <- function() {
     snapshot <- ls(envir = .GlobalEnv)
-    obj_checksums <- sapply(snapshot, function(obj) {
-        list(obj = obj, checksum = create_checksum(get(obj, envir = .GlobalEnv)))
-    }, simplify = FALSE)
+    obj_checksums <- sapply(
+        snapshot,
+        function(obj) {
+            list(
+                obj = obj,
+                checksum = create_checksum(get(obj, envir = .GlobalEnv))
+            )
+        },
+        simplify = FALSE
+    )
     return(obj_checksums)
 }
 
@@ -190,8 +254,12 @@ compare_snapshots <- function(.before, .after, block_id, expr) {
     removed <- setdiff(namespace, names(.after))
 
     # Rebuild namespace
-    if (length(added) > 0) namespace <- c(added, namespace)
-    if (length(removed) > 0) namespace <- namespace[-match(removed, namespace)]
+    if (length(added) > 0) {
+        namespace <- c(added, namespace)
+    }
+    if (length(removed) > 0) {
+        namespace <- namespace[-match(removed, namespace)]
+    }
 
     pipe$update_namespace(block_id, unique(namespace))
 
@@ -214,7 +282,9 @@ compare_snapshots <- function(.before, .after, block_id, expr) {
 # Helper function to format each cell with padding and apply colors
 format_cell <- function(cell, width, style = NULL) {
     formatted_cell <- sprintf(paste0("%-", width, "s"), cell)
-    if (!is.null(style)) formatted_cell <- style(formatted_cell)
+    if (!is.null(style)) {
+        formatted_cell <- style(formatted_cell)
+    }
 
     return(formatted_cell)
 }
@@ -234,7 +304,7 @@ pretty_print_table <- function(data) {
         col_values <- apply(data, 2, as.character)
 
         if (is.vector(col_values)) {
-            col_values <- t(as.matrix(col_values))  # Convert vector to matrix with 1 row
+            col_values <- t(as.matrix(col_values)) # Convert vector to matrix with 1 row
         }
 
         # Calculate the maximum width of each column (either from the column name or the data)
@@ -247,12 +317,48 @@ pretty_print_table <- function(data) {
         body_text_col <- make_ansi_style("#b16286", bg = FALSE)
 
         # Apply colors to the header
-        header <- col_yellow(paste0("│ ", paste(mapply(format_cell, col_names, col_widths, MoreArgs = list(style = header_text_col)), collapse = " │ "), " │"))
-        separator <- col_yellow(paste0("├─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┼─"), "─┤"))
+        header <- col_yellow(paste0(
+            "│ ",
+            paste(
+                mapply(
+                    format_cell,
+                    col_names,
+                    col_widths,
+                    MoreArgs = list(style = header_text_col)
+                ),
+                collapse = " │ "
+            ),
+            " │"
+        ))
+        separator <- col_yellow(paste0(
+            "├─",
+            paste(
+                mapply(
+                    function(width) {
+                        col_yellow(paste(rep("─", width), collapse = ""))
+                    },
+                    col_widths
+                ),
+                collapse = "─┼─"
+            ),
+            "─┤"
+        ))
 
         # Print table top border and header
         cat("\t")
-        cli_verbatim(col_yellow(paste0("╭─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┬─"), "─╮")))
+        cli_verbatim(col_yellow(paste0(
+            "╭─",
+            paste(
+                mapply(
+                    function(width) {
+                        col_yellow(paste(rep("─", width), collapse = ""))
+                    },
+                    col_widths
+                ),
+                collapse = "─┬─"
+            ),
+            "─╮"
+        )))
         cat("\t")
         cli_verbatim(header)
         cat("\t")
@@ -262,15 +368,39 @@ pretty_print_table <- function(data) {
         row_styles <- list(body_text_col)
 
         for (i in seq_len(nrow(data))) {
-            style <- row_styles[[i %% length(row_styles) + 1]]  # Alternating row colors
-            row <- col_yellow(paste0("│ ", paste(mapply(format_cell, col_values[i, ], col_widths, MoreArgs = list(style = style)), collapse = " │ "), " │"))
+            style <- row_styles[[i %% length(row_styles) + 1]] # Alternating row colors
+            row <- col_yellow(paste0(
+                "│ ",
+                paste(
+                    mapply(
+                        format_cell,
+                        col_values[i, ],
+                        col_widths,
+                        MoreArgs = list(style = style)
+                    ),
+                    collapse = " │ "
+                ),
+                " │"
+            ))
             cat("\t")
             cli_verbatim(row)
         }
 
         # Print bottom border
         cat("\t")
-        cli_text(col_yellow(paste0("╰─", paste(mapply(function(width) col_yellow(paste(rep("─", width), collapse = "")), col_widths), collapse = "─┴─"), "─╯")))
+        cli_text(col_yellow(paste0(
+            "╰─",
+            paste(
+                mapply(
+                    function(width) {
+                        col_yellow(paste(rep("─", width), collapse = ""))
+                    },
+                    col_widths
+                ),
+                collapse = "─┴─"
+            ),
+            "─╯"
+        )))
     }
 }
 
@@ -287,7 +417,11 @@ trace_expr <- function(expr) {
                     var_name <- as.character(e[[2]])
                     value <- e[[3]]
                 } else {
-                    var_name <- if (op == "->") as.character(e[[3]]) else as.character(e[[2]])
+                    var_name <- if (op == "->") {
+                        as.character(e[[3]])
+                    } else {
+                        as.character(e[[2]])
+                    }
                     value <- if (op == "->") e[[2]] else e[[3]]
                 }
 
@@ -301,7 +435,8 @@ trace_expr <- function(expr) {
             # Only recurse if the call has arguments
             if (length(e) > 1) {
                 for (i in seq_along(e)) {
-                    if (i > 1) {  # Skip operator itself
+                    if (i > 1) {
+                        # Skip operator itself
                         results <- walk_expr(e[[i]], results)
                     }
                 }
@@ -322,31 +457,61 @@ parse_error <- function(.id, msg, call_trace, on_error) {
     offender <- sub(".*'(.*)'.*", "\\1", msg)
     # Check for specific common errors and provide custom messages
     if (grepl("unexpected", msg)) {
-        message <- paste("It looks like there's an issue with your syntax ->", offender)
+        message <- paste(
+            "It looks like there's an issue with your syntax ->",
+            offender
+        )
     } else if (grepl("non-numeric argument", msg)) {
-        message <- paste("A numeric value was expected, but a non-numeric argument was provided ->", offender)
+        message <- paste(
+            "A numeric value was expected, but a non-numeric argument was provided ->",
+            offender
+        )
     } else if (grepl("non-conformable arguments", msg)) {
-        message <- paste("The dimensions of the objects don't match for this operation ->", offender)
+        message <- paste(
+            "The dimensions of the objects don't match for this operation ->",
+            offender
+        )
     } else if (grepl("object .* not found", msg)) {
-        message <- paste("One or more variables are missing or undefined ->", offender)
+        message <- paste(
+            "One or more variables are missing or undefined ->",
+            offender
+        )
     } else if (grepl("subscript out of bounds", msg)) {
         message <- paste("An index is out of range ->", offender)
     } else if (grepl("argument .* is missing", msg)) {
-        message <- paste("A required argument is missing or not provided ->", offender)
+        message <- paste(
+            "A required argument is missing or not provided ->",
+            offender
+        )
     } else if (grepl("cannot open the connection", msg)) {
-        message <- paste("There was an issue opening a file or connection ->", offender)
+        message <- paste(
+            "There was an issue opening a file or connection ->",
+            offender
+        )
     } else if (grepl("no package|package .* not found", msg)) {
         message <- paste("A required package is missing ->", offender)
     } else if (grepl("object.*not found|argument.*is missing", msg, ignore.case = TRUE)) {
         # Extract the missing object or argument name
         message <- paste("Missing Variable/Input/Name ->", offender)
-    } else if (grepl("non-numeric argument to binary operator|undefined columns", msg, ignore.case = TRUE)) {
+    } else if (
+        grepl(
+            "non-numeric argument to binary operator|undefined columns",
+            msg,
+            ignore.case = TRUE
+        )
+    ) {
         # Identify mathematical or logical error specifics
         message <- paste("Mathematical/Logical Operator Error ->", offender)
     } else if (grepl("cannot coerce|not compatible", msg, ignore.case = TRUE)) {
         # Identify type incompatibility
         message <- paste("Incompatible type for item ->", offender)
-    } else if (grepl("subscript out of bounds|non-conformable arguments", msg, ignore.case = TRUE)) {
+    } else if (
+        grepl(
+            "subscript out of bounds|non-conformable arguments",
+            msg,
+            ignore.case = TRUE
+        )
+    ) {
         # Identify non-conformable items in matrix operations
         message <- paste("Dimensional Error ->", offender)
     } else {
@@ -367,25 +532,34 @@ parse_error <- function(.id, msg, call_trace, on_error) {
         collapse = ", "
     )
 
-    stop(paste0(.id, ", Message: {", on_error, "}, Error: {", message, "}, Trace: {", call_trace, "}"))
+    stop(paste0(
+        .id,
+        ", Message: {",
+        on_error,
+        "}, Error: {",
+        message,
+        "}, Trace: {",
+        call_trace,
+        "}"
+    ))
 }
 
 populate_env <- function(expr, env, export = NULL, deport = NULL) {
-    temp_env <- new.env(parent = env)  # Create a temporary environment
+    temp_env <- new.env(parent = env) # Create a temporary environment
 
-    eval(expr, envir = temp_env)  # Evaluate the expression in temp_env
+    eval(expr, envir = temp_env) # Evaluate the expression in temp_env
 
-    all_vars <- ls(temp_env)  # Get all created variables
+    all_vars <- ls(temp_env) # Get all created variables
 
     # Determine final variables to copy
     if (!is.null(export)) {
         final_vars <- intersect(all_vars, export)
     } else {
-        final_vars <- all_vars  # If no export filter, consider all
+        final_vars <- all_vars # If no export filter, consider all
     }
 
     if (!is.null(deport)) {
-        final_vars <- setdiff(final_vars, deport)  # Remove deport variables
+        final_vars <- setdiff(final_vars, deport) # Remove deport variables
     }
 
     # Copy selected variables to the target environment

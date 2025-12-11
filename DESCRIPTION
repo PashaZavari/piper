@@ -14,9 +14,10 @@ Imports:
     purrr,
     stringr,
     yaml,
-    rlang
+    rlang,
+    testthat
 Depends:
     R (>= 3.5.0)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 ByteCompile: true
