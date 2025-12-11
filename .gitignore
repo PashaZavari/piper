@@ -20,4 +20,5 @@ NAMESPACE
 .DS_Store
 .vscode/
 
+man/*
 
