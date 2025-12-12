@@ -37,6 +37,7 @@ test-verbose:
 
 # Run package check (comprehensive package check)
 check:
+    rm -rf ..Rcheck
     @echo "Running package check..."
     Rscript -e "devtools::check()"
 

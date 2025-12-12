@@ -14,7 +14,6 @@ Imports:
     purrr,
     stringr,
     rlang,
-Suggests:
     testthat
 Depends:
     R (>= 3.5.0)
