@@ -605,7 +605,7 @@ piper.brew <- function(
 #' @description Load a newly initialized piper instance.
 #' @param module the name of the source asset
 #' @param from target directory
-#' @param .env a target environmehnt hook, DEFAULT: parent.frame()
+#' @param .env a target environment hook, DEFAULT: parent.frame()
 #' @param ... additional arguments passed to module load
 #' @export piper.load
 piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) {
