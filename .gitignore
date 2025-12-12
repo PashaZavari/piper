@@ -8,6 +8,7 @@
 .Ruserdata
 .Renviron
 .Rprofile
+..Rcheck
 
 # Ignore akk R project initializers
 *.Rproj
@@ -20,4 +21,5 @@ NAMESPACE
 .DS_Store
 .vscode/
 
+man/*
 

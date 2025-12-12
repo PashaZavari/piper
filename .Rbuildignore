@@ -1,2 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^[.]?air[.]toml$
+^\.vscode$
+justfile
+.lintr
+.github
+assets/*
+..Rcheck

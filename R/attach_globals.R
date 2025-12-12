@@ -6,8 +6,12 @@
 #' @param .env a target export environment, DEFAULT parent.frame()
 #' @export attach_globals
 attach_globals <- function(..., .data, .f, .env = parent.frame()) {
-    if (!missing(.data) && !CHECK_EMPTY(.data)) {
-        .args <- lapply(as.list(substitute(alist(...)))[-1], function(.x) pluck(.data, deparse(.x)))
+    if (!missing(.data) && !check_empty(.data)) {
+        arg_names <- sapply(as.list(substitute(alist(...)))[-1], deparse)
+        .args <- lapply(arg_names, function(.x) {
+            pluck(.data, .x)
+        })
+        names(.args) <- arg_names
         if (!missing(.f)) {
             .args <- lapply(.args, function(.x) .f(.x))
         }

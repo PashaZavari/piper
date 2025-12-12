@@ -82,6 +82,9 @@ module_.push(
         depends = list(
             "main_rng"
         )
+        imports = list(
+            main_rng = list("rng")
+        )
         onError = {}
     }, {
         # Calculate the mean and standard deviation of the random numbers
@@ -101,10 +104,14 @@ module_.push(
         depends = list(
             "main_gm"
         )
+        imports = list(
+            main_gm = list("mean_value", "sd_value"),
+            global = list("random_number")
+        )
         onError = {}
     }, {
         z_score <- (random_number - mean_value) / sd_value
-        upper_prob <- pnorm(s_score, lower.tail = FALSE)
+        upper_prob <- pnorm(z_score, lower.tail = FALSE)
     }
 )
 ```
@@ -142,6 +149,9 @@ module_.push(
         depends = list(
             "main_rng"
         )
+        imports = list(
+            main_rng = list("rng")
+        )
         export = list("mean_value", "sd_value")
         deport = list("median_value")
         onError = {}
@@ -156,4 +166,143 @@ module_.push(
         cat("Standard Deviation:", sd_value, "\n")
     }
 )
+```
+
+## Module Arguments
+
+### `depends`
+
+A list of module IDs that must be executed before this module. The pipeline will automatically resolve and execute dependencies in the correct order.
+
+```R
+depends = list("main_rng", "another_module")
+```
+
+### `imports`
+
+The `imports` argument explicitly declares where each variable used in a module originates from. This enables better refactoring, parallelization, and testing. The format is a nested list where:
+
+- **Keys** are module IDs (from `depends`) or `"global"` for global environment variables
+- **Values** are lists of variable names that come from that source
+
+**Example with multiple import sources:**
+
+```R
+imports = list(
+    main_gm = list("mean_value", "sd_value"),
+    main_rng = list("rng"),
+    global = list("random_number", "threshold")
+)
+```
+
+### `export`
+
+A list of variable names that should be exported from the module to the global environment. If not specified, all variables created in the module are exported.
+
+```R
+export = list("mean_value", "sd_value")
+```
+
+### `deport`
+
+A list of variable names that should be excluded from exports, even if they are created in the module. Useful for intermediate variables that shouldn't pollute the global namespace.
+
+```R
+deport = list("median_value", "temp_calculation")
+```
+
+### `onError`
+
+A named list of error handling instructions. Currently used for custom error messages and error handling behavior.
+
+```R
+onError = list(
+    message = "Custom error message",
+    action = "stop"
+)
+```
+
+**Complete example with all arguments:**
+
+```R
+module_.push(
+    .this = {
+        id = "main_cp"
+        description = "Calculate probability of a random number."
+        depends = list("main_gm", "main_rng")
+        imports = list(
+            main_gm = list("mean_value", "sd_value"),
+            main_rng = list("rng"),
+            global = list("random_number", "threshold")
+        )
+        export = list("z_score", "upper_prob")
+        deport = list("intermediate_value")
+        onError = {}
+    }, {
+        z_score <- (random_number - mean_value) / sd_value
+        upper_prob <- pnorm(z_score, lower.tail = FALSE)
+    }
+)
+```
+
+## Testing Modules
+
+Each module can be independently tested using the `test_module` function, which sets up required imports, executes the module in isolation, and validates exports. The function prevents dependency modules from auto-executing by pre-populating the execution stack, ensuring true isolation for testing.
+
+**Example test file:**
+
+```R
+# test/test_modules.R
+library(testthat)
+library(piper)
+
+test_that("main_gm module calculates moments correctly", {
+    # Initialize pipeline
+    piper.new()
+    
+    # Load module assets
+    piper.load(pipe = "package_pipe", module = "xyz_module", version = "v1.0", header = "main.r")
+    
+    # Test the module with provided imports
+    result <- test_module(
+        module_id = "main_gm",
+        imports = list(
+            main_rng = list(rng = runif(1000, min = -1, max = 1))
+        ),
+        expected_exports = list(
+            mean_value = 0.0,  # Approximate expected value
+            sd_value = 0.577   # Approximate expected value for uniform(-1, 1)
+        )
+    )
+    
+    expect_equal(result$status, "PASS")
+})
+
+test_that("main_cp module calculates probability correctly", {
+    # Initialize pipeline
+    piper.new()
+    
+    # Load module assets
+    piper.load(pipe = "package_pipe", module = "xyz_module", version = "v1.0", header = "main.r")
+    
+    # Test the module with provided imports
+    result <- test_module(
+        module_id = "main_cp",
+        imports = list(
+            main_gm = list(
+                mean_value = 0.0,
+                sd_value = 1.0
+            ),
+            global = list(
+                random_number = 1.96
+            )
+        ),
+        expected_exports = list(
+            z_score = 1.96,
+            upper_prob = pnorm(1.96, lower.tail = FALSE)
+        )
+    )
+    
+    expect_equal(result$status, "PASS")
+})
 ```
