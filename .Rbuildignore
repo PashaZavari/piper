@@ -6,3 +6,4 @@ justfile
 .lintr
 .github
 assets/*
+..Rcheck
