@@ -378,7 +378,7 @@ piper <- R6::R6Class(
 
 #' @title piper.new
 #' @description Initialize a new piper instance.
-#' @param .env a target environmehnt hook, DEFAULT: parent.frame()
+#' @param .env a target environment hook, DEFAULT: parent.frame()
 #' @param auto_purge should existing module be purged, DEFAULT: TRUE
 #' @param ... a list of functional arguments
 #' @export piper.new
