@@ -3,3 +3,6 @@
 ^[.]?air[.]toml$
 ^\.vscode$
 justfile
+.lintr
+.github
+assets/*

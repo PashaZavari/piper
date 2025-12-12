@@ -20,6 +20,8 @@
     eval(substitute(lhs), envir = local_env)
     local_namespace <- ls(envir = local_env)
     args <- mget(local_namespace, envir = local_env)
+    # Intentional assignment to .GlobalEnv: module environments are stored globally
+    # for inter-module communication and namespace management
     assign(args$id, local_env, envir = .GlobalEnv)
 
     error_guard(
@@ -318,7 +320,7 @@ pretty_print_table <- function(data) {
 
         # Apply colors to the header
         header <- col_yellow(paste0(
-            "│ ",
+            "| ",
             paste(
                 mapply(
                     format_cell,
@@ -326,38 +328,38 @@ pretty_print_table <- function(data) {
                     col_widths,
                     MoreArgs = list(style = header_text_col)
                 ),
-                collapse = " │ "
+                collapse = " | "
             ),
-            " │"
+            " |"
         ))
         separator <- col_yellow(paste0(
-            "├─",
+            "|-",
             paste(
                 mapply(
                     function(width) {
-                        col_yellow(paste(rep("─", width), collapse = ""))
+                        col_yellow(paste(rep("-", width), collapse = ""))
                     },
                     col_widths
                 ),
-                collapse = "─┼─"
+                collapse = "-+-"
             ),
-            "─┤"
+            "-|"
         ))
 
         # Print table top border and header
         cat("\t")
         cli_verbatim(col_yellow(paste0(
-            "╭─",
+            "+-",
             paste(
                 mapply(
                     function(width) {
-                        col_yellow(paste(rep("─", width), collapse = ""))
+                        col_yellow(paste(rep("-", width), collapse = ""))
                     },
                     col_widths
                 ),
-                collapse = "─┬─"
+                collapse = "-+-"
             ),
-            "─╮"
+            "-+"
         )))
         cat("\t")
         cli_verbatim(header)
@@ -370,7 +372,7 @@ pretty_print_table <- function(data) {
         for (i in seq_len(nrow(data))) {
             style <- row_styles[[i %% length(row_styles) + 1]] # Alternating row colors
             row <- col_yellow(paste0(
-                "│ ",
+                "| ",
                 paste(
                     mapply(
                         format_cell,
@@ -378,9 +380,9 @@ pretty_print_table <- function(data) {
                         col_widths,
                         MoreArgs = list(style = style)
                     ),
-                    collapse = " │ "
+                    collapse = " | "
                 ),
-                " │"
+                " |"
             ))
             cat("\t")
             cli_verbatim(row)
@@ -389,17 +391,17 @@ pretty_print_table <- function(data) {
         # Print bottom border
         cat("\t")
         cli_text(col_yellow(paste0(
-            "╰─",
+            "+-",
             paste(
                 mapply(
                     function(width) {
-                        col_yellow(paste(rep("─", width), collapse = ""))
+                        col_yellow(paste(rep("-", width), collapse = ""))
                     },
                     col_widths
                 ),
-                collapse = "─┴─"
+                collapse = "-+-"
             ),
-            "─╯"
+            "-+"
         )))
     }
 }

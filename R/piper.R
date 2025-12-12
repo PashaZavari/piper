@@ -379,6 +379,7 @@ piper <- R6::R6Class(
 #' @title piper.new
 #' @description Initialize a new piper instance.
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
+#' @param auto_purge should existing module be purged, DEFAULT: TRUE
 #' @param ... a list of functional arguments
 #' @export piper.new
 piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) {
@@ -542,6 +543,7 @@ piper.module <- function(pipe, module, parent = "R++", mode = "0755") {
 #' @param module module module
 #' @param method a method name
 #' @param version library version
+#' @param header header file name, DEFAULT: "main.r"
 #' @param parent the desired parent directory to house module assets
 #' @param mode rw+ permission settings
 #' @description Create new library method.
@@ -604,6 +606,7 @@ piper.brew <- function(
 #' @param module the name of the source asset
 #' @param from target directory
 #' @param .env a target environmehnt hook, DEFAULT: parent.frame()
+#' @param ... additional arguments passed to module load
 #' @export piper.load
 piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) {
     #nolintr
@@ -613,6 +616,7 @@ piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) {
 
 #' @title piper.purge
 #' @description Purge module pipe.
+#' @param .env a target environmehnt hook, DEFAULT: parent.frame()
 #' @export piper.purge
 piper.purge <- function(.env = parent.frame()) {
     #nolintr
@@ -652,3 +656,6 @@ module_.env <- function() {
     #nolintr
     module_$get_env()
 }
+
+# Suppress warnings for dynamically assigned global variable
+utils::globalVariables("module_")

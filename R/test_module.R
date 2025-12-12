@@ -52,6 +52,8 @@ test_module <- function(
                     is.list(imports[["global"]]) &&
                     var_name %in% names(imports[["global"]])
             ) {
+                # Intentional assignment to .GlobalEnv: test setup requires global variables
+                # to simulate the module execution environment for testing
                 assign(
                     var_name,
                     imports[["global"]][[var_name]],
