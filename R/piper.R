@@ -558,7 +558,7 @@ piper.brew <- function(
     mode = "0755"
 ) {
     #nolintr
-    #Check to see if path exists: (eg. modules/accounting)
+    # Check to see if path exists: (eg. modules/accounting)
     # Check if parent directory exists
     sub_pipe_path <- file.path(parent, pipe)
     if (!dir.exists(sub_pipe_path)) {
