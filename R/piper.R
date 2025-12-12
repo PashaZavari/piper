@@ -398,7 +398,7 @@ piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) {
             warning(paste(
                 .pipe,
                 " << is already defined. 
-                Consider using piper.purge() to release the module before decleration."
+                Consider using piper.purge() to release the module before declaration."
             ))
         }
     } else {
