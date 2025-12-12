@@ -13,7 +13,7 @@ Imports:
     dplyr,
     purrr,
     stringr,
-    rlang
+    rlang,
 Suggests:
     testthat
 Depends:
