@@ -314,16 +314,51 @@ pretty_print_table <- function(data) {
             max(nchar(c(col_names[i], col_values[, i])), na.rm = TRUE)
         })
 
+        # Calculate total table width needed
+        # Format: "| col1 | col2 | col3 |" = 2 + sum(widths) + 3*ncol + 1
+        num_cols <- length(col_names)
+        table_width_needed <- 2 + sum(col_widths) + (num_cols * 3) + 1
+        
+        # Get console width (default to 80 if can't determine)
+        console_width <- tryCatch(
+            {
+                if (requireNamespace("cli", quietly = TRUE)) {
+                    cli::console_width()
+                } else {
+                    getOption("width", 80)
+                }
+            },
+            error = function(e) getOption("width", 80)
+        )
+        
+        # Account for indentation (4 spaces for "\t")
+        available_width <- console_width - 8
+        
+        # Scale column widths if necessary
+        if (table_width_needed > available_width) {
+            scale_factor <- available_width / table_width_needed
+            col_widths <- pmax(3, floor(col_widths * scale_factor)) # Minimum width of 3
+        }
+
         # Define background and text color styles
         header_text_col <- make_ansi_style("#689d6a", bg = FALSE)
         body_text_col <- make_ansi_style("#b16286", bg = FALSE)
+
+        # Helper function to format cells with text truncation
+        format_cell_fit <- function(text, width, style) {
+            text <- as.character(text)
+            if (nchar(text) > width) {
+                text <- paste0(substr(text, 1, width - 2), "..")
+            }
+            format_cell(text, width, style = style)
+        }
 
         # Apply colors to the header
         header <- col_yellow(paste0(
             "| ",
             paste(
                 mapply(
-                    format_cell,
+                    format_cell_fit,
                     col_names,
                     col_widths,
                     MoreArgs = list(style = header_text_col)
@@ -370,12 +405,12 @@ pretty_print_table <- function(data) {
         row_styles <- list(body_text_col)
 
         for (i in seq_len(nrow(data))) {
-            style <- row_styles[[i %% length(row_styles) + 1]] # Alternating row colors
+            style <- row_styles[[i %% length(row_styles) + 1]]
             row <- col_yellow(paste0(
                 "| ",
                 paste(
                     mapply(
-                        format_cell,
+                        format_cell_fit,
                         col_values[i, ],
                         col_widths,
                         MoreArgs = list(style = style)
