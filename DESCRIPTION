@@ -1,7 +1,7 @@
 Package: piper
 Type: Package
 Title: Modular forms
-Version: 25.01.07
+Version: 25.01.21
 Author: 409 Data
 Maintainer: The 409 data team <data@409.ai>
 Description: Enable modular object orientation inside R.

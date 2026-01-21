@@ -7,8 +7,8 @@
 `%>>%` <- function(lhs, rhs) {
     # nolint
     parent_env <- parent.frame(n = 1)
-    if (exists("module_", envir = .GlobalEnv)) {
-        pipe <- get("module_", envir = .GlobalEnv)
+    if (exists("..", envir = .GlobalEnv)) {
+        pipe <- get("..", envir = .GlobalEnv)
         stack <- pipe$get_stack()
         parent_env <- pipe$get_env()
     } else {
@@ -85,7 +85,7 @@ error_guard <- function(expr, args, env, stack, pipe) {
     message(paste(Sys.time(), block_id, sep = " -> "))
 
     if (length(depends) > 0) {
-        pipe <- get("module_", envir = .GlobalEnv)
+        pipe <- get("..", envir = .GlobalEnv)
         if (length(stack) > 0) {
             is_missing <- setdiff(depends, stack)
             if (length(is_missing) > 0) {
@@ -133,7 +133,7 @@ error_guard <- function(expr, args, env, stack, pipe) {
     # Validate imports availability after dependencies are resolved
     # Refresh stack in case dependencies were auto-loaded
     if (!is.null(imports) && length(imports) > 0) {
-        pipe <- get("module_", envir = .GlobalEnv)
+        pipe <- get("..", envir = .GlobalEnv)
         stack <- pipe$get_stack() # Refresh stack after auto-loading
         pipe$validate_imports_availability(imports, env, stack, block_id)
     }
@@ -230,7 +230,7 @@ take_snapshot <- function() {
 # Function to compare two snapshots based on checksums
 compare_snapshots <- function(.before, .after, block_id, expr) {
     # Fetch pipe
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
 
     # Inittialize namespace
     namespace <- pipe$get_namespace(block_id)
@@ -347,7 +347,7 @@ pretty_print_table <- function(data) {
         # Helper function to format cells with text truncation
         format_cell_fit <- function(text, width, style) {
             text <- as.character(text)
-            if (nchar(text) > width) {
+            if (!is.na(text) && nchar(text) > width) {
                 text <- paste0(substr(text, 1, width - 2), "..")
             }
             format_cell(text, width, style = style)

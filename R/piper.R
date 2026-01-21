@@ -384,7 +384,7 @@ piper <- R6::R6Class(
 #' @export piper.new
 piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) {
     #nolintr
-    .pipe <- "module_"
+    .pipe <- ".."
     if (exists(.pipe, envir = .env) && inherits(get(.pipe, envir = .env), "piper")) {
         if (auto_purge) {
             piper.purge(.env = .env)
@@ -610,8 +610,8 @@ piper.brew <- function(
 #' @export piper.load
 piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) {
     #nolintr
-    module_$set_env(.env = .env)
-    module_$load(module, from, ...)
+    ..$set_env(.env = .env)
+    ..$load(module, from, ...)
 }
 
 #' @title piper.purge
@@ -621,41 +621,41 @@ piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) {
 piper.purge <- function(.env = parent.frame()) {
     #nolintr
     .purge <- c(
-        unlist(module_$namespace),
-        module_$get_stack(),
-        "module_"
+        unlist(..$namespace),
+        ..$get_stack(),
+        ".."
     )
     rm(list = .purge, envir = .env)
     gc(full = TRUE, reset = TRUE)
 }
 
-#' @title module_.push
+#' @title ...push
 #' @description Populate piper module stack.
 #' @param .this state initializers
 #' @param .with expression constructors
 #' @param ... a list of functional arguments
-#' @export module_.push
-module_.push <- function(.this = {}, .with = {}, ...) {
+#' @export ...push
+...push <- function(.this = {}, .with = {}, ...) {
     #nolintr
-    module_$push(substitute(.this %>>% .with), ...)
+    ..$push(substitute(.this %>>% .with), ...)
 }
 
-#' @title module_.compute
+#' @title ...pipe
 #' @description Execute a piper module.
 #' @param ... a list of language expressions
-#' @export module_.compute
-module_.compute <- function(...) {
+#' @export ...pipe
+...pipe <- function(...) {
     #nolintr
-    module_$compute(...)
+    ..$compute(...)
 }
 
-#' @title module_.env
+#' @title ...env
 #' @description Fetch global module environment.
-#' @export module_.env
-module_.env <- function() {
+#' @export ...env
+...env <- function() {
     #nolintr
-    module_$get_env()
+    ..$get_env()
 }
 
 # Suppress warnings for dynamically assigned global variable
-utils::globalVariables("module_")
+utils::globalVariables("..")

@@ -64,7 +64,7 @@ Open `~/[package-root-directory]/R++/package_pipe/xyz_module/v1.0/main.r` in you
 ```R
 #./[package-root-directory]/R++/package_pipe/xyz_module/v1.0/main.r
 
-module_.push(
+...push(
     .this = {
         id = "main_rng"
         description = "Random number generator"
@@ -75,7 +75,7 @@ module_.push(
     }
 )
 
-module_.push(
+...push(
     .this = {
         id = "main_gm"
         description = "Calculate Gaussian moments"
@@ -97,7 +97,7 @@ module_.push(
     }
 )
 
-module_.push(
+...push(
     .this = {
         id = "main_cp"
         description = "Calculate probability of a random number."
@@ -135,14 +135,14 @@ piper.load(pipe = "package_pipe", module = "xyz_module", version = "v1.0", heade
 
 # Execute random number pipeline
 random_number <- 10
-module_.compute("main_rng", .debug = FALSE)
-module_.compute("main_gm", .debug = FALSE)
-module_.compute("main_cp", .debug = FALSE)
+...pipe("main_rng", .debug = FALSE)
+...pipe("main_gm", .debug = FALSE)
+...pipe("main_cp", .debug = FALSE)
 ```
 You can also export specific variables from each module or deport ones that you wish to drop: 
 
 ```R
-module_.push(
+...push(
     .this = {
         id = "main_gm"
         description = "Calculate Gaussian moments"
@@ -225,7 +225,7 @@ onError = list(
 **Complete example with all arguments:**
 
 ```R
-module_.push(
+...push(
     .this = {
         id = "main_cp"
         description = "Calculate probability of a random number."
@@ -265,7 +265,7 @@ test_that("main_gm module calculates moments correctly", {
     
     # Test the module with provided imports
     result <- test_module(
-        module_id = "main_gm",
+        ..id = "main_gm",
         imports = list(
             main_rng = list(rng = runif(1000, min = -1, max = 1))
         ),
@@ -287,7 +287,7 @@ test_that("main_cp module calculates probability correctly", {
     
     # Test the module with provided imports
     result <- test_module(
-        module_id = "main_cp",
+        ..id = "main_cp",
         imports = list(
             main_gm = list(
                 mean_value = 0.0,
