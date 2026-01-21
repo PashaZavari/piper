@@ -11,7 +11,7 @@ test_that("piper.load loads module from file", {
     module_file <- file.path(module_dir, "main.r")
     writeLines(
         c(
-            'module_.push(',
+            '...push(',
             '    .this = {',
             '        id = "loaded_module"',
             '        description = "Module loaded from file"',
@@ -41,7 +41,7 @@ test_that("piper.load loads module from file", {
     })
 
     # Verify module was loaded
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("loaded_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -60,7 +60,7 @@ test_that("piper.load uses default parameters", {
     module_file <- file.path(module_dir, "main.r")
     writeLines(
         c(
-            'module_.push(',
+            '...push(',
             '    .this = {',
             '        id = "default_module"',
             '        description = "Module with defaults"',
@@ -86,7 +86,7 @@ test_that("piper.load uses default parameters", {
     })
 
     # Verify module was loaded
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("default_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -104,7 +104,7 @@ test_that("piper.load handles custom header file name", {
     module_file <- file.path(module_dir, "custom.r")
     writeLines(
         c(
-            'module_.push(',
+            '...push(',
             '    .this = {',
             '        id = "custom_header_module"',
             '        description = "Module with custom header"',
@@ -132,7 +132,7 @@ test_that("piper.load handles custom header file name", {
     })
 
     # Verify module was loaded
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("custom_header_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -149,7 +149,7 @@ test_that("piper.load sets environment correctly", {
     module_file <- file.path(module_dir, "main.r")
     writeLines(
         c(
-            'module_.push(',
+            '...push(',
             '    .this = {',
             '        id = "env_module"',
             '        description = "Environment test"',
@@ -180,7 +180,7 @@ test_that("piper.load sets environment correctly", {
     })
 
     # Verify environment was set
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_identical(pipe$get_env(), custom_env)
 
     piper.purge(.env = .GlobalEnv)
@@ -218,7 +218,7 @@ test_that("piper.load loads multiple modules from file", {
     module_file <- file.path(module_dir, "main.r")
     writeLines(
         c(
-            'module_.push(',
+            '...push(',
             '    .this = {',
             '        id = "module_one"',
             '        description = "First module"',
@@ -229,7 +229,7 @@ test_that("piper.load loads multiple modules from file", {
             '    }',
             ')',
             '',
-            'module_.push(',
+            '...push(',
             '    .this = {',
             '        id = "module_two"',
             '        description = "Second module"',
@@ -256,7 +256,7 @@ test_that("piper.load loads multiple modules from file", {
     })
 
     # Verify both modules were loaded
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("module_one" %in% names(pipe$imports))
     expect_true("module_two" %in% names(pipe$imports))
 

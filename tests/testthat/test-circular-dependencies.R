@@ -2,7 +2,7 @@ test_that("circular dependency between two modules causes error", {
     piper.new(.env = .GlobalEnv)
 
     # Module A depends on B
-    module_.push(
+    ...push(
         .this = {
             id = "module_a"
             description = "Module A"
@@ -18,7 +18,7 @@ test_that("circular dependency between two modules causes error", {
     )
 
     # Module B depends on A (circular!)
-    module_.push(
+    ...push(
         .this = {
             id = "module_b"
             description = "Module B"
@@ -37,7 +37,7 @@ test_that("circular dependency between two modules causes error", {
     # This will cause infinite recursion in auto-loading
     expect_error(
         suppressMessages({
-            module_.compute("module_a")
+            ...pipe("module_a")
         }),
         regexp = "Auto-load failed|Missing import|has not been executed"
     )
@@ -49,7 +49,7 @@ test_that("circular dependency in three-module chain causes error", {
     piper.new(.env = .GlobalEnv)
 
     # A -> B -> C -> A (circular)
-    module_.push(
+    ...push(
         .this = {
             id = "mod_a"
             description = "Module A"
@@ -64,7 +64,7 @@ test_that("circular dependency in three-module chain causes error", {
         }
     )
 
-    module_.push(
+    ...push(
         .this = {
             id = "mod_b"
             description = "Module B"
@@ -79,7 +79,7 @@ test_that("circular dependency in three-module chain causes error", {
         }
     )
 
-    module_.push(
+    ...push(
         .this = {
             id = "mod_c"
             description = "Module C"
@@ -97,7 +97,7 @@ test_that("circular dependency in three-module chain causes error", {
     # Should fail due to circular dependency
     expect_error(
         suppressMessages({
-            module_.compute("mod_a")
+            ...pipe("mod_a")
         }),
         regexp = "Auto-load failed|Missing import|has not been executed"
     )
@@ -109,7 +109,7 @@ test_that("self-referential module causes error", {
     piper.new(.env = .GlobalEnv)
 
     # Module depends on itself
-    module_.push(
+    ...push(
         .this = {
             id = "self_ref"
             description = "Self-referential module"
@@ -124,7 +124,7 @@ test_that("self-referential module causes error", {
     # Should fail when trying to compute
     expect_error(
         suppressMessages({
-            module_.compute("self_ref")
+            ...pipe("self_ref")
         }),
         regexp = "Auto-load failed|Missing import|has not been executed"
     )
@@ -136,7 +136,7 @@ test_that("circular dependency detected during auto-load", {
     piper.new(.env = .GlobalEnv)
 
     # Set up circular dependency
-    module_.push(
+    ...push(
         .this = {
             id = "circ_a"
             description = "Circular A"
@@ -151,7 +151,7 @@ test_that("circular dependency detected during auto-load", {
         }
     )
 
-    module_.push(
+    ...push(
         .this = {
             id = "circ_b"
             description = "Circular B"
@@ -170,7 +170,7 @@ test_that("circular dependency detected during auto-load", {
     # which will try to auto-load circ_a, creating infinite recursion
     expect_error(
         suppressMessages({
-            module_.compute("circ_a")
+            ...pipe("circ_a")
         }),
         regexp = "Auto-load failed|Missing import|has not been executed"
     )

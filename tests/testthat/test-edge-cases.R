@@ -2,7 +2,7 @@ test_that("empty module with no code block works", {
     piper.new(.env = .GlobalEnv)
 
     # Module with empty code block
-    module_.push(
+    ...push(
         .this = {
             id = "empty_module"
             description = "Empty module"
@@ -16,11 +16,11 @@ test_that("empty module with no code block works", {
 
     # Should be able to compute it (just does nothing)
     suppressMessages({
-        module_.compute("empty_module")
+        ...pipe("empty_module")
     })
 
     # Module should be in stack
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("empty_module" %in% pipe$get_stack())
 
     piper.purge(.env = .GlobalEnv)
@@ -30,7 +30,7 @@ test_that("module with minimal metadata works", {
     piper.new(.env = .GlobalEnv)
 
     # Module with only required fields
-    module_.push(
+    ...push(
         .this = {
             id = "minimal_module"
         },
@@ -41,10 +41,10 @@ test_that("module with minimal metadata works", {
 
     # Should work
     suppressMessages({
-        module_.compute("minimal_module")
+        ...pipe("minimal_module")
     })
 
-    env <- module_.env()
+    env <- ...env()
     expect_true(exists("x", envir = env))
     expect_equal(get("x", envir = env), 1)
 
@@ -56,7 +56,7 @@ test_that("very long dependency chain works", {
 
     # Create a chain of 10 modules
     # First module
-    module_.push(
+    ...push(
         .this = {
             id = "chain_1"
             description = "Chain module 1"
@@ -71,7 +71,7 @@ test_that("very long dependency chain works", {
 
     # Subsequent modules depend on previous
     # Need to create each module individually to avoid variable scoping issues
-    module_.push(
+    ...push(
         .this = {
             id = "chain_2"
             description = "Chain module 2"
@@ -84,7 +84,7 @@ test_that("very long dependency chain works", {
             value <- value + 1
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "chain_3"
             description = "Chain module 3"
@@ -97,7 +97,7 @@ test_that("very long dependency chain works", {
             value <- value + 1
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "chain_4"
             description = "Chain module 4"
@@ -110,7 +110,7 @@ test_that("very long dependency chain works", {
             value <- value + 1
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "chain_5"
             description = "Chain module 5"
@@ -127,16 +127,16 @@ test_that("very long dependency chain works", {
 
     # Compute the last module - should auto-load all dependencies
     suppressMessages({
-        module_.compute("chain_5")
+        ...pipe("chain_5")
     })
 
     # Verify all modules are in stack
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     stack <- pipe$get_stack()
     expect_true(all(paste0("chain_", 1:5) %in% stack))
 
     # Verify final value
-    env <- module_.env()
+    env <- ...env()
     expect_true(exists("value", envir = env))
     expect_equal(get("value", envir = env), 5)
 
@@ -147,7 +147,7 @@ test_that("module with no exports works correctly", {
     piper.new(.env = .GlobalEnv)
 
     # Module that creates variables but doesn't export any
-    module_.push(
+    ...push(
         .this = {
             id = "no_export_module"
             description = "Module with no exports"
@@ -163,10 +163,10 @@ test_that("module with no exports works correctly", {
     )
 
     suppressMessages({
-        module_.compute("no_export_module")
+        ...pipe("no_export_module")
     })
 
-    env <- module_.env()
+    env <- ...env()
     # No variables should be exported
     expect_false(exists("temp1", envir = env))
     expect_false(exists("temp2", envir = env))
@@ -179,7 +179,7 @@ test_that("module that only deports variables works", {
     piper.new(.env = .GlobalEnv)
 
     # Module that deports everything (nothing exported)
-    module_.push(
+    ...push(
         .this = {
             id = "deport_all_module"
             description = "Module that deports all"
@@ -196,10 +196,10 @@ test_that("module that only deports variables works", {
     )
 
     suppressMessages({
-        module_.compute("deport_all_module")
+        ...pipe("deport_all_module")
     })
 
-    env <- module_.env()
+    env <- ...env()
     # Deported variables should not exist
     # Note: Check that they don't exist OR that they're not the values we set
     # (base R has a 'c' function, so exists("c") might return TRUE for the function)
@@ -228,7 +228,7 @@ test_that("module with very long variable names works", {
 
     # Use a reasonably long variable name (20 chars) to test the functionality
     # Using a simpler approach with a fixed name
-    module_.push(
+    ...push(
         .this = {
             id = "long_names_module"
             description = "Module with long variable names"
@@ -242,10 +242,10 @@ test_that("module with very long variable names works", {
     )
 
     suppressMessages({
-        module_.compute("long_names_module")
+        ...pipe("long_names_module")
     })
 
-    env <- module_.env()
+    env <- ...env()
     expect_true(exists("very_long_var_name_xx", envir = env))
     expect_equal(get("very_long_var_name_xx", envir = env), 42)
 
@@ -256,7 +256,7 @@ test_that("module with many dependencies works", {
     piper.new(.env = .GlobalEnv)
 
     # Create 5 independent modules (create individually to avoid scoping issues)
-    module_.push(
+    ...push(
         .this = {
             id = "dep_1"
             description = "Dependency 1"
@@ -268,7 +268,7 @@ test_that("module with many dependencies works", {
             val_1 <- 10
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "dep_2"
             description = "Dependency 2"
@@ -280,7 +280,7 @@ test_that("module with many dependencies works", {
             val_2 <- 20
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "dep_3"
             description = "Dependency 3"
@@ -292,7 +292,7 @@ test_that("module with many dependencies works", {
             val_3 <- 30
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "dep_4"
             description = "Dependency 4"
@@ -304,7 +304,7 @@ test_that("module with many dependencies works", {
             val_4 <- 40
         }
     )
-    module_.push(
+    ...push(
         .this = {
             id = "dep_5"
             description = "Dependency 5"
@@ -318,7 +318,7 @@ test_that("module with many dependencies works", {
     )
 
     # Create a module that depends on all 5
-    module_.push(
+    ...push(
         .this = {
             id = "many_deps_module"
             description = "Module with many dependencies"
@@ -340,10 +340,10 @@ test_that("module with many dependencies works", {
 
     # Compute - should auto-load all dependencies
     suppressMessages({
-        module_.compute("many_deps_module")
+        ...pipe("many_deps_module")
     })
 
-    env <- module_.env()
+    env <- ...env()
     expect_true(exists("sum", envir = env))
     expect_equal(get("sum", envir = env), 150) # 10 + 20 + 30 + 40 + 50
 
@@ -354,7 +354,7 @@ test_that("module with empty depends list works", {
     piper.new(.env = .GlobalEnv)
 
     # Module with explicit empty depends
-    module_.push(
+    ...push(
         .this = {
             id = "empty_depends"
             description = "Module with empty depends"
@@ -367,10 +367,10 @@ test_that("module with empty depends list works", {
     )
 
     suppressMessages({
-        module_.compute("empty_depends")
+        ...pipe("empty_depends")
     })
 
-    env <- module_.env()
+    env <- ...env()
     expect_true(exists("x", envir = env))
     expect_equal(get("x", envir = env), 42)
 
@@ -381,7 +381,7 @@ test_that("module with empty imports works", {
     piper.new(.env = .GlobalEnv)
 
     # Module with explicit empty imports
-    module_.push(
+    ...push(
         .this = {
             id = "empty_imports"
             description = "Module with empty imports"
@@ -395,10 +395,10 @@ test_that("module with empty imports works", {
     )
 
     suppressMessages({
-        module_.compute("empty_imports")
+        ...pipe("empty_imports")
     })
 
-    env <- module_.env()
+    env <- ...env()
     expect_true(exists("x", envir = env))
     expect_equal(get("x", envir = env), 100)
 

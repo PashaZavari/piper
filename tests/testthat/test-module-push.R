@@ -1,7 +1,7 @@
 test_that("module_.push adds a module to the pipeline", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "test_module"
             description = "Test module"
@@ -13,7 +13,7 @@ test_that("module_.push adds a module to the pipeline", {
         }
     )
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("test_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -24,7 +24,7 @@ test_that("module_.push validates imports structure", {
 
     # Invalid import source (not in depends and not 'global')
     expect_error(
-        module_.push(
+        ...push(
             .this = {
                 id = "test_module"
                 description = "Test module"
@@ -48,7 +48,7 @@ test_that("module_.push accepts valid imports structure", {
     piper.new(.env = .GlobalEnv)
 
     # Valid import from dependency
-    module_.push(
+    ...push(
         .this = {
             id = "test_module"
             description = "Test module"
@@ -63,7 +63,7 @@ test_that("module_.push accepts valid imports structure", {
         }
     )
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("test_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -72,7 +72,7 @@ test_that("module_.push accepts valid imports structure", {
 test_that("module_.push accepts global imports", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "test_module"
             description = "Test module"
@@ -87,7 +87,7 @@ test_that("module_.push accepts global imports", {
         }
     )
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("test_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -96,7 +96,7 @@ test_that("module_.push accepts global imports", {
 test_that("module_.push handles export and deport", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "test_module"
             description = "Test module"
@@ -112,7 +112,7 @@ test_that("module_.push handles export and deport", {
         }
     )
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("test_module" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
@@ -121,7 +121,7 @@ test_that("module_.push handles export and deport", {
 test_that("export filters variables during execution", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "export_test"
             description = "Test export filtering"
@@ -138,10 +138,10 @@ test_that("export filters variables during execution", {
     )
 
     suppressMessages({
-        module_.compute("export_test")
+        ...pipe("export_test")
     })
 
-    env <- module_.env()
+    env <- ...env()
     # Exported variables should exist
     expect_true(exists("result", envir = env))
     expect_true(exists("value", envir = env))
@@ -158,7 +158,7 @@ test_that("export filters variables during execution", {
 test_that("deport excludes variables from exports", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "deport_test"
             description = "Test deport filtering"
@@ -175,10 +175,10 @@ test_that("deport excludes variables from exports", {
     )
 
     suppressMessages({
-        module_.compute("deport_test")
+        ...pipe("deport_test")
     })
 
-    env <- module_.env()
+    env <- ...env()
     # Variables not in deport should exist
     expect_true(exists("result", envir = env))
     expect_true(exists("value", envir = env))
@@ -195,7 +195,7 @@ test_that("deport excludes variables from exports", {
 test_that("export and deport work together", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "export_deport_test"
             description = "Test export and deport together"
@@ -214,10 +214,10 @@ test_that("export and deport work together", {
     )
 
     suppressMessages({
-        module_.compute("export_deport_test")
+        ...pipe("export_deport_test")
     })
 
-    env <- module_.env()
+    env <- ...env()
     # Variables in export but not deport should exist
     expect_true(exists("result", envir = env))
     expect_true(exists("value", envir = env))

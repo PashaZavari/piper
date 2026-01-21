@@ -51,7 +51,7 @@ test_that("piper.brew creates version directory and header file", {
 test_that("module_.env returns the module environment", {
     piper.new(.env = .GlobalEnv)
 
-    env <- module_.env()
+    env <- ...env()
     expect_true(is.environment(env))
 
     piper.purge(.env = .GlobalEnv)
@@ -60,7 +60,7 @@ test_that("module_.env returns the module environment", {
 test_that("map_pipeline shows module information", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "test_module"
             description = "Test description"
@@ -72,7 +72,7 @@ test_that("map_pipeline shows module information", {
         }
     )
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     # Should not error
     suppressMessages({
         expect_no_error(pipe$map_pipeline())

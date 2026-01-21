@@ -1,7 +1,7 @@
 test_that("onError custom messages are included in error output", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "error_test_module"
             description = "Test error handling"
@@ -20,7 +20,7 @@ test_that("onError custom messages are included in error output", {
     # Execute and check error contains onError message
     expect_error(
         suppressMessages({
-            module_.compute("error_test_module")
+            ...pipe("error_test_module")
         }),
         "Custom error message"
     )
@@ -31,7 +31,7 @@ test_that("onError custom messages are included in error output", {
 test_that("onError with multiple fields formats correctly", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "multi_error_test"
             description = "Test multiple onError fields"
@@ -52,7 +52,7 @@ test_that("onError with multiple fields formats correctly", {
     error_msg <- tryCatch(
         {
             suppressMessages({
-                module_.compute("multi_error_test")
+                ...pipe("multi_error_test")
             })
             NULL
         },
@@ -69,7 +69,7 @@ test_that("onError with multiple fields formats correctly", {
 test_that("onError with empty list still works", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "empty_error_test"
             description = "Test empty onError"
@@ -85,7 +85,7 @@ test_that("onError with empty list still works", {
     # Should still error, just without custom onError content
     expect_error(
         suppressMessages({
-            module_.compute("empty_error_test")
+            ...pipe("empty_error_test")
         })
     )
 
@@ -96,7 +96,7 @@ test_that("duplicate module IDs trigger warning", {
     piper.new(.env = .GlobalEnv)
 
     # Push first module
-    module_.push(
+    ...push(
         .this = {
             id = "duplicate_test"
             description = "First module"
@@ -110,7 +110,7 @@ test_that("duplicate module IDs trigger warning", {
 
     # Push module with same ID - should warn
     expect_warning(
-        module_.push(
+        ...push(
             .this = {
                 id = "duplicate_test"
                 description = "Second module (duplicate)"
@@ -125,7 +125,7 @@ test_that("duplicate module IDs trigger warning", {
     )
 
     # Verify the module was replaced (should only have one)
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("duplicate_test" %in% names(pipe$imports))
     # Should only appear once
     expect_equal(sum(names(pipe$imports) == "duplicate_test"), 1)
@@ -137,7 +137,7 @@ test_that("duplicate module ID replaces previous module", {
     piper.new(.env = .GlobalEnv)
 
     # Push first module
-    module_.push(
+    ...push(
         .this = {
             id = "replace_test"
             description = "Original"
@@ -151,7 +151,7 @@ test_that("duplicate module ID replaces previous module", {
 
     # Replace with new module
     suppressWarnings({
-        module_.push(
+        ...push(
             .this = {
                 id = "replace_test"
                 description = "Replacement"
@@ -166,10 +166,10 @@ test_that("duplicate module ID replaces previous module", {
 
     # Execute and verify replacement module runs
     suppressMessages({
-        module_.compute("replace_test")
+        ...pipe("replace_test")
     })
 
-    env <- module_.env()
+    env <- ...env()
     # Should have replacement value, not original
     expect_true(exists("replacement_value", envir = env))
     expect_false(exists("original_value", envir = env))

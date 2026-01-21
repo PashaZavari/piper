@@ -1,7 +1,7 @@
 test_that("test_module executes a module in isolation", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "simple_test"
             description = "Simple test module"
@@ -29,7 +29,7 @@ test_that("test_module executes a module in isolation", {
 test_that("test_module works with provided imports", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "test_with_imports"
             description = "Test module with imports"
@@ -68,7 +68,7 @@ test_that("test_module prevents dependency auto-execution", {
     piper.new(.env = .GlobalEnv)
 
     # Create dependency module
-    module_.push(
+    ...push(
         .this = {
             id = "dependency_module"
             description = "Dependency module"
@@ -82,7 +82,7 @@ test_that("test_module prevents dependency auto-execution", {
     )
 
     # Create module that depends on it
-    module_.push(
+    ...push(
         .this = {
             id = "dependent_module"
             description = "Dependent module"
@@ -134,7 +134,7 @@ test_that("test_module prevents dependency auto-execution", {
 test_that("test_module validates exports correctly", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "export_test"
             description = "Export test module"
@@ -170,7 +170,7 @@ test_that("test_module validates exports correctly", {
 test_that("test_module handles missing imports gracefully", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "import_test"
             description = "Import test module"
@@ -200,7 +200,7 @@ test_that("test_module handles missing imports gracefully", {
 test_that("test_module cleans up after errors", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "error_test"
             description = "Error test module"

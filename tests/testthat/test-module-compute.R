@@ -1,7 +1,7 @@
 test_that("module_.compute executes a simple module", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "simple_module"
             description = "Simple test module"
@@ -14,10 +14,10 @@ test_that("module_.compute executes a simple module", {
     )
 
     suppressMessages({
-        module_.compute("simple_module")
+        ...pipe("simple_module")
     })
-    expect_true(exists("result", envir = module_.env()))
-    expect_equal(get("result", envir = module_.env()), 42)
+    expect_true(exists("result", envir = ...env()))
+    expect_equal(get("result", envir = ...env()), 42)
 
     piper.purge(.env = .GlobalEnv)
 })
@@ -26,7 +26,7 @@ test_that("module_.compute handles dependencies", {
     piper.new(.env = .GlobalEnv)
 
     # First module
-    module_.push(
+    ...push(
         .this = {
             id = "module_a"
             description = "Module A"
@@ -39,7 +39,7 @@ test_that("module_.compute handles dependencies", {
     )
 
     # Second module depends on first
-    module_.push(
+    ...push(
         .this = {
             id = "module_b"
             description = "Module B"
@@ -56,11 +56,11 @@ test_that("module_.compute handles dependencies", {
 
     # Execute in order
     suppressMessages({
-        module_.compute("module_a")
-        module_.compute("module_b")
+        ...pipe("module_a")
+        ...pipe("module_b")
     })
 
-    expect_equal(get("value_b", envir = module_.env()), 20)
+    expect_equal(get("value_b", envir = ...env()), 20)
 
     piper.purge(.env = .GlobalEnv)
 })
@@ -68,7 +68,7 @@ test_that("module_.compute handles dependencies", {
 test_that("module_.compute auto-loads missing dependencies", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "module_a"
             description = "Module A"
@@ -80,7 +80,7 @@ test_that("module_.compute auto-loads missing dependencies", {
         }
     )
 
-    module_.push(
+    ...push(
         .this = {
             id = "module_b"
             description = "Module B"
@@ -100,7 +100,7 @@ test_that("module_.compute auto-loads missing dependencies", {
     captured_output <- capture.output(
         {
             captured_messages <- capture.output(
-                expect_message(module_.compute("module_b"), "Attempting auto-load"),
+                expect_message(...pipe("module_b"), "Attempting auto-load"),
                 type = "message"
             )
         },
@@ -108,9 +108,9 @@ test_that("module_.compute auto-loads missing dependencies", {
     )
     # Re-execute silently to get the result
     suppressMessages({
-        module_.compute("module_b")
+        ...pipe("module_b")
     })
-    expect_equal(get("value_b", envir = module_.env()), 6)
+    expect_equal(get("value_b", envir = ...env()), 6)
 
     piper.purge(.env = .GlobalEnv)
 })
@@ -118,7 +118,7 @@ test_that("module_.compute auto-loads missing dependencies", {
 test_that("module_.compute validates imports availability", {
     piper.new(.env = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "module_a"
             description = "Module A"
@@ -130,7 +130,7 @@ test_that("module_.compute validates imports availability", {
         }
     )
 
-    module_.push(
+    ...push(
         .this = {
             id = "module_b"
             description = "Module B"
@@ -146,11 +146,11 @@ test_that("module_.compute validates imports availability", {
     )
 
     suppressMessages({
-        module_.compute("module_a")
+        ...pipe("module_a")
     })
     expect_error(
         suppressMessages({
-            module_.compute("module_b")
+            ...pipe("module_b")
         }),
         "Missing required imports"
     )
@@ -164,7 +164,7 @@ test_that("module_.compute handles global imports", {
     # Set up global variable
     assign("global_x", 100, envir = .GlobalEnv)
 
-    module_.push(
+    ...push(
         .this = {
             id = "test_module"
             description = "Test module"
@@ -180,9 +180,9 @@ test_that("module_.compute handles global imports", {
     )
 
     suppressMessages({
-        module_.compute("test_module")
+        ...pipe("test_module")
     })
-    expect_equal(get("result", envir = module_.env()), 101)
+    expect_equal(get("result", envir = ...env()), 101)
 
     # Clean up
     rm("global_x", envir = .GlobalEnv)

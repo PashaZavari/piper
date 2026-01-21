@@ -1,12 +1,12 @@
 test_that("validate_imports_structure accepts valid structure", {
     # Clean up any existing instance
-    if (exists("module_", envir = .GlobalEnv)) {
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
     piper.new(.env = .GlobalEnv)
-    expect_true(exists("module_", envir = .GlobalEnv))
-    pipe <- get("module_", envir = .GlobalEnv)
+    expect_true(exists("..", envir = .GlobalEnv))
+    pipe <- get("..", envir = .GlobalEnv)
 
     # Valid: imports from dependencies
     expect_no_error(
@@ -45,13 +45,13 @@ test_that("validate_imports_structure accepts valid structure", {
 
 test_that("validate_imports_structure rejects invalid sources", {
     # Clean up any existing instance
-    if (exists("module_", envir = .GlobalEnv)) {
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
     piper.new(.env = .GlobalEnv)
-    expect_true(exists("module_", envir = .GlobalEnv))
-    pipe <- get("module_", envir = .GlobalEnv)
+    expect_true(exists("..", envir = .GlobalEnv))
+    pipe <- get("..", envir = .GlobalEnv)
 
     # Invalid: source not in depends and not 'global'
     expect_error(
@@ -70,13 +70,13 @@ test_that("validate_imports_structure rejects invalid sources", {
 
 test_that("validate_imports_structure requires list values", {
     # Clean up any existing instance
-    if (exists("module_", envir = .GlobalEnv)) {
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
     piper.new(.env = .GlobalEnv)
-    expect_true(exists("module_", envir = .GlobalEnv))
-    pipe <- get("module_", envir = .GlobalEnv)
+    expect_true(exists("..", envir = .GlobalEnv))
+    pipe <- get("..", envir = .GlobalEnv)
 
     # Invalid: non-list value
     expect_error(
@@ -95,13 +95,13 @@ test_that("validate_imports_structure requires list values", {
 
 test_that("validate_imports_availability checks variable existence", {
     # Clean up any existing instance
-    if (exists("module_", envir = .GlobalEnv)) {
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
     piper.new(.env = .GlobalEnv)
-    expect_true(exists("module_", envir = .GlobalEnv))
-    pipe <- get("module_", envir = .GlobalEnv)
+    expect_true(exists("..", envir = .GlobalEnv))
+    pipe <- get("..", envir = .GlobalEnv)
     test_env <- new.env()
 
     # Set up test environment with variables
@@ -154,13 +154,13 @@ test_that("validate_imports_availability checks variable existence", {
 
 test_that("validate_imports_availability checks module execution", {
     # Clean up any existing instance
-    if (exists("module_", envir = .GlobalEnv)) {
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
     piper.new(.env = .GlobalEnv)
-    expect_true(exists("module_", envir = .GlobalEnv))
-    pipe <- get("module_", envir = .GlobalEnv)
+    expect_true(exists("..", envir = .GlobalEnv))
+    pipe <- get("..", envir = .GlobalEnv)
     test_env <- new.env()
 
     # Error: module not in stack

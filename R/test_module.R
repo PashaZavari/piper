@@ -15,13 +15,13 @@ test_module <- function(
     .debug = FALSE
 ) {
     # Get the piper instance
-    if (!exists("module_", envir = .GlobalEnv)) {
+    if (!exists("..", envir = .GlobalEnv)) {
         stop(
-            "module_ instance not found. Please initialize with piper.new() first."
+            ".. instance not found. Please initialize with piper.new() first."
         )
     }
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
 
     # Check that module exists
     if (!(module_id %in% names(pipe$imports))) {

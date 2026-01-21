@@ -265,7 +265,7 @@ test_that("main_gm module calculates moments correctly", {
     
     # Test the module with provided imports
     result <- test_module(
-        ..id = "main_gm",
+        module_id = "main_gm",
         imports = list(
             main_rng = list(rng = runif(1000, min = -1, max = 1))
         ),
@@ -287,7 +287,7 @@ test_that("main_cp module calculates probability correctly", {
     
     # Test the module with provided imports
     result <- test_module(
-        ..id = "main_cp",
+        module_id = "main_cp",
         imports = list(
             main_gm = list(
                 mean_value = 0.0,

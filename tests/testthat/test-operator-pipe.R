@@ -1,6 +1,6 @@
 test_that("%>>% warns when module_ instance doesn't exist", {
-    # Ensure no module_ exists
-    if (exists("module_", envir = .GlobalEnv)) {
+    # Ensure no .. exists
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
@@ -39,10 +39,10 @@ test_that("%>>% warns when module_ instance doesn't exist", {
 test_that("%>>% works correctly with module_ instance", {
     piper.new(.env = .GlobalEnv)
 
-    # Use module_.push which internally uses %>>%
+    # Use ...push which internally uses %>>%
     # This properly registers the module
     suppressMessages({
-        module_.push(
+        ...push(
             .this = {
                 id = "pipe_test"
                 description = "Pipe test"
@@ -56,15 +56,15 @@ test_that("%>>% works correctly with module_ instance", {
     })
 
     # Module should be registered
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("pipe_test" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
 })
 
 test_that("%>>% uses global environment when module_ doesn't exist", {
-    # Ensure no module_ exists
-    if (exists("module_", envir = .GlobalEnv)) {
+    # Ensure no .. exists
+    if (exists("..", envir = .GlobalEnv)) {
         piper.purge(.env = .GlobalEnv)
     }
 
@@ -107,13 +107,13 @@ test_that("%>>% uses module environment when module_ exists", {
     custom_env <- new.env()
     assign("custom_var", 200, envir = custom_env)
 
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     pipe$set_env(custom_env)
 
-    # Use module_.push which internally uses %>>%
+    # Use ...push which internally uses %>>%
     # This properly registers the module
     suppressMessages({
-        module_.push(
+        ...push(
             .this = {
                 id = "custom_env_test"
                 description = "Custom env test"
@@ -131,7 +131,7 @@ test_that("%>>% uses module environment when module_ exists", {
 
     # Now compute it - should use the custom environment
     suppressMessages({
-        module_.compute("custom_env_test")
+        ...pipe("custom_env_test")
     })
 
     # Verify result is in the custom environment
@@ -146,7 +146,7 @@ test_that("%>>% handles complex expressions correctly", {
 
     # First create the dependency module
     suppressMessages({
-        module_.push(
+        ...push(
             .this = {
                 id = "other_module"
                 description = "Other module"
@@ -160,9 +160,9 @@ test_that("%>>% handles complex expressions correctly", {
         )
     })
 
-    # Test with complex metadata using module_.push (which uses %>>% internally)
+    # Test with complex metadata using ...push (which uses %>>% internally)
     suppressMessages({
-        module_.push(
+        ...push(
             .this = {
                 id = "complex_test"
                 description = "Complex expression test"
@@ -182,7 +182,7 @@ test_that("%>>% handles complex expressions correctly", {
     })
 
     # Module should be registered with all metadata
-    pipe <- get("module_", envir = .GlobalEnv)
+    pipe <- get("..", envir = .GlobalEnv)
     expect_true("complex_test" %in% names(pipe$imports))
 
     piper.purge(.env = .GlobalEnv)
