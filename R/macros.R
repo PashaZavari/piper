@@ -58,10 +58,20 @@
             stop(msg)
         } else {
             if (length(value) == 0) {
-                value <- NA
+                value <- if (expecting %in% c("double", "numeric")) {
+                    NA_real_
+                } else if (expecting == "logical") {
+                    NA
+                } else if (expecting == "character") {
+                    NA_character_
+                } else if (expecting == "list") {
+                    NULL
+                } else {
+                    rhs
+                }
             }
-            return(value)
         }
+        return(value)
     }
 }
 
@@ -448,21 +458,33 @@ trace_expr <- function(expr) {
     walk_expr <- function(e, results) {
         if (is.call(e)) {
             op <- as.character(e[[1]])
+            op <- op[1L]  # e[[1]] can be a call (e.g. (fn)(x)), so as.character may be length > 1
+            is_assign <- isTRUE(any(op %in% c("<-", "=", "->", "assign"), na.rm = TRUE))
 
-            if (op %in% c("<-", "=", "->", "assign")) {
-                if (op == "assign") {
+            if (is_assign) {
+                if (identical(op, "assign")) {
                     var_name <- as.character(e[[2]])
                     value <- e[[3]]
                 } else {
-                    var_name <- if (op == "->") {
+                    var_name <- if (identical(op, "->")) {
                         as.character(e[[3]])
                     } else {
                         as.character(e[[2]])
                     }
-                    value <- if (op == "->") e[[2]] else e[[3]]
+                    value <- if (identical(op, "->")) e[[2]] else e[[3]]
                 }
 
-                if (is.call(value) && value[[1]] == as.name("function")) {
+                if (length(var_name) > 1) {
+                    lhs <- if (identical(op, "->")) e[[3]] else e[[2]]
+                    if (isTRUE(is.call(lhs) && length(lhs) >= 2)) {
+                        var_name <- as.character(lhs[[2]])
+                    } else {
+                        var_name <- var_name[1L]
+                    }
+                }
+                var_name <- var_name[1L]
+                is_function_def <- is.call(value) && value[[1]] == as.name("function")
+                if (isTRUE(is_function_def)) {
                     results$functions <- c(results$functions, var_name)
                 } else {
                     results$variables <- c(results$variables, var_name)
