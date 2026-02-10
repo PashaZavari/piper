@@ -124,7 +124,9 @@ piper <- R6::R6Class(
                     list(
                         module = args$id,
                         workflow = args$description,
-                        dependencies = if (is.null(args$depends) || length(args$depends) == 0) {
+                        dependencies = if (
+                            is.null(args$depends) || length(args$depends) == 0
+                        ) {
                             ""
                         } else {
                             paste(args$depends, collapse = ", ")
@@ -321,7 +323,9 @@ piper <- R6::R6Class(
                 for (ii in seq_along(tokens)) {
                     part <- tokens[[ii]]
 
-                    if (!inherits(try(eval(part), silent = TRUE), "try-error")) {
+                    if (
+                        !inherits(try(eval(part), silent = TRUE), "try-error")
+                    ) {
                         if (is.call(part)) {
                             fun_token <- part[[1]]
                             calls <- c(calls, deparse(fun_token))
@@ -385,7 +389,10 @@ piper <- R6::R6Class(
 piper.new <- function(.env = parent.frame(), auto_purge = TRUE, ...) {
     #nolintr
     .pipe <- ".."
-    if (exists(.pipe, envir = .env) && inherits(get(.pipe, envir = .env), "piper")) {
+    if (
+        exists(.pipe, envir = .env) &&
+            inherits(get(.pipe, envir = .env), "piper")
+    ) {
         if (auto_purge) {
             piper.purge(.env = .env)
             warning(paste(
