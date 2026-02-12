@@ -1,0 +1,22 @@
+Package: piper
+Type: Package
+Title: Modular forms
+Version: 25.01.21
+Author: 409 Data
+Maintainer: The 409 data team <data@409.ai>
+Description: Enable modular object orientation inside R.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    cli,
+    dplyr,
+    purrr,
+    stringr,
+    rlang,
+    testthat
+Depends:
+    R (>= 3.5.0)
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
+ByteCompile: true
