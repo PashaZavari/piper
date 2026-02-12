@@ -304,9 +304,13 @@ format_cell <- function(cell, width, style = NULL) {
 #' @title pretty_print_table
 #' @description Pretty print a data frame in table format with aligned columns and color palette
 #' @param data a valid R object, e.g. data.frame
+#' @param width optional; target width in characters for the table (including borders).
+#'   If \code{NULL}, uses \code{getOption("piper.table.width")} if set, otherwise the
+#'   console width minus indentation. Use a larger value (e.g. 200 or 300) to make
+#'   wide tables readable when the console is narrow.
 #' @importFrom cli cli_alert_info cli_text cli_verbatim make_ansi_style col_yellow
 #' @export pretty_print_table
-pretty_print_table <- function(data) {
+pretty_print_table <- function(data, width = 500) {
     if (is.data.frame(data) && nrow(data) > 0) {
         cat("\n\t")
         cli_alert_info("[Module Summary]")
@@ -328,23 +332,41 @@ pretty_print_table <- function(data) {
         # Format: "| col1 | col2 | col3 |" = 2 + sum(widths) + 3*ncol + 1
         num_cols <- length(col_names)
         table_width_needed <- 2 + sum(col_widths) + (num_cols * 3) + 1
-        
-        # Get console width (default to 80 if can't determine)
-        console_width <- tryCatch(
-            {
-                if (requireNamespace("cli", quietly = TRUE)) {
-                    cli::console_width()
-                } else {
-                    getOption("width", 80)
-                }
-            },
-            error = function(e) getOption("width", 80)
-        )
-        
-        # Account for indentation (4 spaces for "\t")
-        available_width <- console_width - 8
-        
-        # Scale column widths if necessary
+
+        # Resolve available width: explicit width > option > console
+        if (
+            !is.null(width) &&
+                is.numeric(width) &&
+                length(width) == 1L &&
+                width > 0
+        ) {
+            available_width <- width
+        } else {
+            opt_width <- getOption("piper.table.width")
+            if (
+                !is.null(opt_width) &&
+                    is.numeric(opt_width) &&
+                    length(opt_width) == 1L &&
+                    opt_width > 0
+            ) {
+                available_width <- opt_width
+            } else {
+                console_width <- tryCatch(
+                    {
+                        if (requireNamespace("cli", quietly = TRUE)) {
+                            cli::console_width()
+                        } else {
+                            getOption("width", 80)
+                        }
+                    },
+                    error = function(e) getOption("width", 80)
+                )
+                # Account for indentation (4 spaces for "\t")
+                available_width <- console_width - 8
+            }
+        }
+
+        # Scale column widths if necessary (min width 3 so columns don't disappear)
         if (table_width_needed > available_width) {
             scale_factor <- available_width / table_width_needed
             col_widths <- pmax(3, floor(col_widths * scale_factor)) # Minimum width of 3
@@ -458,8 +480,11 @@ trace_expr <- function(expr) {
     walk_expr <- function(e, results) {
         if (is.call(e)) {
             op <- as.character(e[[1]])
-            op <- op[1L]  # e[[1]] can be a call (e.g. (fn)(x)), so as.character may be length > 1
-            is_assign <- isTRUE(any(op %in% c("<-", "=", "->", "assign"), na.rm = TRUE))
+            op <- op[1L] # e[[1]] can be a call (e.g. (fn)(x)), so as.character may be length > 1
+            is_assign <- isTRUE(any(
+                op %in% c("<-", "=", "->", "assign"),
+                na.rm = TRUE
+            ))
 
             if (is_assign) {
                 if (identical(op, "assign")) {
@@ -483,7 +508,8 @@ trace_expr <- function(expr) {
                     }
                 }
                 var_name <- var_name[1L]
-                is_function_def <- is.call(value) && value[[1]] == as.name("function")
+                is_function_def <- is.call(value) &&
+                    value[[1]] == as.name("function")
                 if (isTRUE(is_function_def)) {
                     results$functions <- c(results$functions, var_name)
                 } else {
@@ -549,7 +575,9 @@ parse_error <- function(.id, msg, call_trace, on_error) {
         )
     } else if (grepl("no package|package .* not found", msg)) {
         message <- paste("A required package is missing ->", offender)
-    } else if (grepl("object.*not found|argument.*is missing", msg, ignore.case = TRUE)) {
+    } else if (
+        grepl("object.*not found|argument.*is missing", msg, ignore.case = TRUE)
+    ) {
         # Extract the missing object or argument name
         message <- paste("Missing Variable/Input/Name ->", offender)
     } else if (
