@@ -16,6 +16,30 @@ piper <- R6::R6Class(
             self$imports <- {}
             self$dir <- dir
             self$env <- new.env()
+            self$capture_enabled <- FALSE
+            self$captured_imports <- list()
+            self$captured_exports <- list()
+            self$watch_reported <- character(0)
+        },
+        #' @description reset watch state (reported variables) for next pipeline run
+        reset_watch = function() {
+            self$watch_reported <- character(0)
+        },
+        #' @description enable or disable capture of block inputs and exports
+        #' @param enable if TRUE, enable capture and clear any previous captured data
+        set_capture = function(enable = TRUE) {
+            self$capture_enabled <- isTRUE(enable)
+            if (self$capture_enabled) {
+                self$captured_imports <- list()
+                self$captured_exports <- list()
+            }
+        },
+        #' @description return captured imports and exports (when capture was enabled)
+        get_captured = function() {
+            list(
+                imports = self$captured_imports,
+                exports = self$captured_exports
+            )
         },
         #' @description execute a pipe block from the top of the stack
         #' @param name a computational block to execute
@@ -23,6 +47,32 @@ piper <- R6::R6Class(
         compute = function(name, .debug = FALSE) {
             if (name %in% names(self$imports)) {
                 import <- self$imports[[name]]
+                local_env <- new.env()
+                args <- self$memory_map(import, local_env)
+
+                # Watch: which variables exist before this block. Block runs in parent.frame();
+                # we also check self$env so we see vars in the pipeline env (e.g. set by set_env).
+                watch_list <- private$get_watch_list()
+                run_env <- parent.frame()
+                exists_in <- function(v, env, inherits = TRUE) {
+                    exists(v, envir = env, inherits = inherits)
+                }
+                state_before <- if (length(watch_list) > 0) {
+                    watch_list[vapply(
+                        watch_list,
+                        function(v) exists_in(v, run_env) || exists_in(v, self$env),
+                        logical(1)
+                    )]
+                } else {
+                    character(0)
+                }
+
+                if (self$capture_enabled) {
+                    self$captured_imports[[name]] <- private$snapshot_imports(
+                        args$imports,
+                        self$env
+                    )
+                }
                 if (.debug) {
                     tmp_path <- paste0(
                         self$dir,
@@ -37,6 +87,35 @@ piper <- R6::R6Class(
                 } else {
                     response <- eval(import)
                 }
+                if (self$capture_enabled) {
+                    self$captured_exports[[name]] <- private$snapshot_exports(
+                        args$export,
+                        self$env
+                    )
+                }
+
+                # Watch: report when watched variables first become available
+                if (length(watch_list) > 0) {
+                    state_after <- watch_list[vapply(
+                        watch_list,
+                        function(v) exists_in(v, run_env) || exists_in(v, self$env),
+                        logical(1)
+                    )]
+                    new_in_block <- setdiff(state_after, state_before)
+                    already_but_not_reported <- setdiff(state_before, self$watch_reported)
+                    for (v in already_but_not_reported) {
+                        message("[piper watch] '", v, "' was already present when block '", name, "' started")
+                    }
+                    for (v in new_in_block) {
+                        message("[piper watch] '", v, "' first became available after block '", name, "'")
+                    }
+                    self$watch_reported <- c(
+                        self$watch_reported,
+                        already_but_not_reported,
+                        new_in_block
+                    )
+                }
+
                 if (Negate(`%in%`)(name, self$stack)) {
                     self$stack <- append(self$stack, name)
                 }
@@ -124,9 +203,7 @@ piper <- R6::R6Class(
                     list(
                         module = args$id,
                         workflow = args$description,
-                        dependencies = if (
-                            is.null(args$depends) || length(args$depends) == 0
-                        ) {
+                        dependencies = if (is.null(args$depends) || length(args$depends) == 0) {
                             ""
                         } else {
                             paste(args$depends, collapse = ", ")
@@ -304,6 +381,53 @@ piper <- R6::R6Class(
         }
     ),
     private = list(
+        get_watch_list = function() {
+            w <- getOption("piper.watch", NULL)
+            if (is.null(w) || length(w) == 0) {
+                return(character(0))
+            }
+            unique(as.character(unlist(w)))
+        },
+        snapshot_imports = function(module_imports, env) {
+            if (is.null(module_imports) || length(module_imports) == 0L) {
+                return(list())
+            }
+            out <- list()
+            for (source in names(module_imports)) {
+                var_names <- module_imports[[source]]
+                out[[source]] <- list()
+                for (var_name in var_names) {
+                    if (exists(var_name, envir = env, inherits = FALSE)) {
+                        out[[source]][[var_name]] <- get(
+                            var_name,
+                            envir = env,
+                            inherits = FALSE
+                        )
+                    } else {
+                        out[[source]][[var_name]] <- NULL
+                    }
+                }
+            }
+            out
+        },
+        snapshot_exports = function(module_export, env) {
+            if (is.null(module_export) || length(module_export) == 0L) {
+                return(list())
+            }
+            out <- list()
+            for (export_name in module_export) {
+                if (exists(export_name, envir = env, inherits = FALSE)) {
+                    out[[export_name]] <- get(
+                        export_name,
+                        envir = env,
+                        inherits = FALSE
+                    )
+                } else {
+                    out[[export_name]] <- NULL
+                }
+            }
+            out
+        },
         build_blocks = function(blocks) {
             imports <- gsub(
                 pattern = "\\..*",
@@ -323,9 +447,7 @@ piper <- R6::R6Class(
                 for (ii in seq_along(tokens)) {
                     part <- tokens[[ii]]
 
-                    if (
-                        !inherits(try(eval(part), silent = TRUE), "try-error")
-                    ) {
+                    if (!inherits(try(eval(part), silent = TRUE), "try-error")) {
                         if (is.call(part)) {
                             fun_token <- part[[1]]
                             calls <- c(calls, deparse(fun_token))
@@ -619,6 +741,57 @@ piper.load <- function(module, from = ".", .env = rlang::caller_env(), ...) {
     #nolintr
     ..$set_env(.env = .env)
     ..$load(module, from, ...)
+}
+
+#' @title piper.capture
+#' @description Enable or disable capture of block inputs and exports for each
+#'   subsequent \code{...pipe()} call. When enabled, the piper instance records
+#'   each block's imports (before run) and exports (after run) into in-memory
+#'   lists. Retrieve them with \code{..$get_captured()} (returns
+#'   \code{list(imports = <named list>, exports = <named list>)}).
+#' @param enable if TRUE, enable capture and clear any previous captured data;
+#'   if FALSE, disable capture.
+#' @param .env environment where \code{..} (piper instance) is bound, DEFAULT: .GlobalEnv
+#' @export piper.capture
+piper.capture <- function(enable = TRUE, .env = .GlobalEnv) {
+    if (!exists("..", envir = .env)) {
+        stop("Piper not initialized. Run piper.new() and piper.load(...) first.")
+    }
+    pipe <- get("..", envir = .env)
+    if (!inherits(pipe, "piper")) {
+        stop("'..' is not a piper instance.")
+    }
+    pipe$set_capture(enable)
+    invisible(NULL)
+}
+
+#' @title piper.watch
+#' @description Register variable names to watch during pipeline execution. When
+#'   you run the pipeline (via \code{...pipe()} or \code{..$compute()}), the
+#'   piper instance reports when each watched variable first becomes available
+#'   in the pipeline environment: either already present when a block started, or
+#'   first became available after a given block. Useful for fixing tests or
+#'   imports when a variable exists in a full run but is missing when a module
+#'   is tested in isolation.
+#' @param vars character vector or list of variable names to watch (e.g.
+#'   \code{c("var1", "var2")} or \code{list("var1", "var2")}).
+#' @param .env environment where \code{..} (piper instance) is bound, DEFAULT: .GlobalEnv
+#' @export piper.watch
+piper.watch <- function(vars, .env = .GlobalEnv) {
+    vars <- unique(as.character(unlist(vars)))
+    options(piper.watch = if (length(vars) > 0) vars else NULL)
+    if (length(vars) > 0) {
+        message("[piper watch] monitoring for variables: ", paste(vars, collapse = ", "))
+    } else {
+        message("[piper watch] cleared (no variables monitored)")
+    }
+    if (exists("..", envir = .env)) {
+        pipe <- get("..", envir = .env)
+        if (inherits(pipe, "piper")) {
+            pipe$reset_watch()
+        }
+    }
+    invisible(NULL)
 }
 
 #' @title piper.purge
