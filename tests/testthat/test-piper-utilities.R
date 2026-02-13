@@ -129,9 +129,10 @@ test_that("set_capture and get_captured record block inputs and exports", {
 
     pipe <- get("..", envir = .GlobalEnv)
     pipe$set_capture(TRUE)
-    ...pipe("cap_a", .debug = FALSE)
-    ...pipe("cap_b", .debug = FALSE)
-
+    capture.output(suppressMessages({
+        ...pipe("cap_a", .debug = FALSE)
+        ...pipe("cap_b", .debug = FALSE)
+    }), type = "output")
     out <- pipe$get_captured()
     expect_named(out, c("imports", "exports"))
     expect_named(out$imports, c("cap_a", "cap_b"))
@@ -157,7 +158,7 @@ test_that("piper.capture enables capture on .. in given env", {
     )
 
     piper.capture(TRUE)
-    ...pipe("cap_single", .debug = FALSE)
+    capture.output(suppressMessages(...pipe("cap_single", .debug = FALSE)), type = "output")
     out <- get("..", envir = .GlobalEnv)$get_captured()
     expect_equal(out$exports$cap_single$z, 2)
 })
@@ -177,7 +178,7 @@ test_that("capture disabled: get_captured returns empty when capture never enabl
         { v <- 10 }
     )
 
-    ...pipe("no_cap", .debug = FALSE)
+    capture.output(suppressMessages(...pipe("no_cap", .debug = FALSE)), type = "output")
     out <- get("..", envir = .GlobalEnv)$get_captured()
     expect_length(out$imports, 0)
     expect_length(out$exports, 0)
@@ -211,10 +212,11 @@ test_that("capture disabled after enable: later pipes not recorded", {
 
     pipe <- get("..", envir = .GlobalEnv)
     pipe$set_capture(TRUE)
-    ...pipe("first", .debug = FALSE)
-    pipe$set_capture(FALSE)
-    ...pipe("second", .debug = FALSE)
-
+    capture.output(suppressMessages({
+        ...pipe("first", .debug = FALSE)
+        pipe$set_capture(FALSE)
+        ...pipe("second", .debug = FALSE)
+    }), type = "output")
     out <- pipe$get_captured()
     expect_equal(names(out$imports), "first")
     expect_equal(names(out$exports), "first")
@@ -238,7 +240,7 @@ test_that("set_capture(TRUE) clears previous captured data", {
 
     pipe <- get("..", envir = .GlobalEnv)
     pipe$set_capture(TRUE)
-    ...pipe("clear_me", .debug = FALSE)
+    capture.output(suppressMessages(...pipe("clear_me", .debug = FALSE)), type = "output")
     out1 <- pipe$get_captured()
     expect_equal(out1$exports$clear_me$n, 42)
 
@@ -276,9 +278,10 @@ test_that("capture handles block with no imports and block with no exports", {
 
     pipe <- get("..", envir = .GlobalEnv)
     pipe$set_capture(TRUE)
-    ...pipe("no_imports", .debug = FALSE)
-    ...pipe("no_exports", .debug = FALSE)
-
+    capture.output(suppressMessages({
+        ...pipe("no_imports", .debug = FALSE)
+        ...pipe("no_exports", .debug = FALSE)
+    }), type = "output")
     out <- pipe$get_captured()
     expect_equal(out$imports$no_imports, list())
     expect_equal(out$exports$no_imports$foo, "bar")
@@ -317,9 +320,10 @@ test_that("capture reads imports and exports from pipe env (get_env)", {
     )
 
     pipe$set_capture(TRUE)
-    ...pipe("env_cap_a", .debug = FALSE)
-    ...pipe("env_cap_b", .debug = FALSE)
-
+    capture.output(suppressMessages({
+        ...pipe("env_cap_a", .debug = FALSE)
+        ...pipe("env_cap_b", .debug = FALSE)
+    }), type = "output")
     out <- pipe$get_captured()
     # Imports for B were captured from pipe env after A ran (so alpha was present)
     expect_equal(out$imports$env_cap_b$env_cap_a$alpha, 100)
@@ -352,8 +356,7 @@ test_that("capture includes global imports when block declares global", {
     )
 
     pipe$set_capture(TRUE)
-    ...pipe("global_consumer", .debug = FALSE)
-
+    capture.output(suppressMessages(...pipe("global_consumer", .debug = FALSE)), type = "output")
     out <- pipe$get_captured()
     expect_equal(out$imports$global_consumer$global$global_payload, list(id = 1437L))
     expect_equal(out$exports$global_consumer$seen_id, 1437L)
@@ -387,8 +390,10 @@ test_that("captured imports/exports round-trip as test_module inputs", {
 
     pipe <- get("..", envir = .GlobalEnv)
     pipe$set_capture(TRUE)
-    ...pipe("round_a", .debug = FALSE)
-    ...pipe("round_b", .debug = FALSE)
+    capture.output(suppressMessages({
+        ...pipe("round_a", .debug = FALSE)
+        ...pipe("round_b", .debug = FALSE)
+    }), type = "output")
     captured <- pipe$get_captured()
 
     # Using captured data as test_module inputs should reproduce the same result
@@ -441,10 +446,11 @@ test_that("capture with multiple dependencies records all sources", {
 
     pipe <- get("..", envir = .GlobalEnv)
     pipe$set_capture(TRUE)
-    ...pipe("multi_a", .debug = FALSE)
-    ...pipe("multi_b", .debug = FALSE)
-    ...pipe("multi_c", .debug = FALSE)
-
+    capture.output(suppressMessages({
+        ...pipe("multi_a", .debug = FALSE)
+        ...pipe("multi_b", .debug = FALSE)
+        ...pipe("multi_c", .debug = FALSE)
+    }), type = "output")
     out <- pipe$get_captured()
     expect_equal(out$imports$multi_c$multi_a$a, 1)
     expect_equal(out$imports$multi_c$multi_b$b, 2)
@@ -476,8 +482,7 @@ test_that("capture reads from pipe env set by set_env", {
     )
 
     pipe$set_capture(TRUE)
-    ...pipe("custom_env_block", .debug = FALSE)
-
+    capture.output(suppressMessages(...pipe("custom_env_block", .debug = FALSE)), type = "output")
     out <- pipe$get_captured()
     expect_equal(out$exports$custom_env_block$doubled, 84L)
 })
@@ -511,7 +516,7 @@ test_that("piper.watch reports when watched variables first become available", {
         { y <- x + 10 }
     )
 
-    piper.watch(c("x", "y"))
+    suppressMessages(piper.watch(c("x", "y")))
     msgs <- capture.output(
         {
             ...pipe("watch_a", .debug = FALSE)
@@ -537,7 +542,7 @@ test_that("piper.watch reports already-present variables when block starts", {
     })
 
     # Pre-create a variable in the pipeline env so it exists before any block
-    piper.new(.env = .GlobalEnv)
+    suppressWarnings(piper.new(.env = .GlobalEnv))
     pipe <- get("..", envir = .GlobalEnv)
     assign("pre_existing", 100, envir = pipe$get_env())
 
@@ -552,7 +557,7 @@ test_that("piper.watch reports already-present variables when block starts", {
         { z <- pre_existing + 1 }
     )
 
-    piper.watch(c("pre_existing", "z"))
+    suppressMessages(piper.watch(c("pre_existing", "z")))
     msgs <- capture.output(
         ...pipe("watch_only", .debug = FALSE),
         type = "message"

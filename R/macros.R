@@ -575,9 +575,7 @@ parse_error <- function(.id, msg, call_trace, on_error) {
         )
     } else if (grepl("no package|package .* not found", msg)) {
         message <- paste("A required package is missing ->", offender)
-    } else if (
-        grepl("object.*not found|argument.*is missing", msg, ignore.case = TRUE)
-    ) {
+    } else if (grepl("object.*not found|argument.*is missing", msg, ignore.case = TRUE)) {
         # Extract the missing object or argument name
         message <- paste("Missing Variable/Input/Name ->", offender)
     } else if (

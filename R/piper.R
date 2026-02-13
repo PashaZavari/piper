@@ -203,9 +203,7 @@ piper <- R6::R6Class(
                     list(
                         module = args$id,
                         workflow = args$description,
-                        dependencies = if (
-                            is.null(args$depends) || length(args$depends) == 0
-                        ) {
+                        dependencies = if (is.null(args$depends) || length(args$depends) == 0) {
                             ""
                         } else {
                             paste(args$depends, collapse = ", ")
@@ -385,7 +383,9 @@ piper <- R6::R6Class(
     private = list(
         get_watch_list = function() {
             w <- getOption("piper.watch", NULL)
-            if (is.null(w) || length(w) == 0) return(character(0))
+            if (is.null(w) || length(w) == 0) {
+                return(character(0))
+            }
             unique(as.character(unlist(w)))
         },
         snapshot_imports = function(module_imports, env) {
@@ -447,9 +447,7 @@ piper <- R6::R6Class(
                 for (ii in seq_along(tokens)) {
                     part <- tokens[[ii]]
 
-                    if (
-                        !inherits(try(eval(part), silent = TRUE), "try-error")
-                    ) {
+                    if (!inherits(try(eval(part), silent = TRUE), "try-error")) {
                         if (is.call(part)) {
                             fun_token <- part[[1]]
                             calls <- c(calls, deparse(fun_token))
